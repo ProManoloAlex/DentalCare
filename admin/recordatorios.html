@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <title>DentalCare - Recordatorios</title>
+    <link rel="stylesheet" href="../styles/portal.css">
+    <script src="../scripts/components/admin-head-loader.js"></script>    <style>
+      .system-badge{
+        font-size:0.75rem; font-weight:600; padding:0.25rem 0.7rem; border-radius:20px;
+        background:#dcfce7; color:#16a34a; display:inline-flex; align-items:center; gap:0.35rem;
+      }
+      .system-badge .dot{ width:7px; height:7px; border-radius:50%; background:#16a34a; }
+
+      .kpi-icon-o{ width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1rem; }
+
+      .tabs-recordatorios .btn{ font-size:0.83rem; position:relative; }
+      .tab-badge{
+        position:absolute; top:-6px; right:-6px; background:#f59e0b; color:#fff; font-size:0.62rem;
+        border-radius:50%; width:17px; height:17px; display:flex; align-items:center; justify-content:center; font-weight:700;
+      }
+
+      .canal-badge{ font-size:0.68rem; font-weight:600; padding:0.15rem 0.5rem; border-radius:6px; display:inline-flex; align-items:center; gap:0.25rem; white-space:nowrap; }
+      .canal-whatsapp{ background:#dcfce7; color:#16a34a; }
+      .canal-email{ background:#dbeafe; color:#2563eb; }
+      .canal-mixto{ background:#fed7aa; color:#c2410c; }
+
+      .status-enviado{ background:#dcfce7; color:#16a34a; }
+      .status-pendiente{ background:#fef3c7; color:#d97706; }
+      .status-fallido{ background:#fee2e2; color:#dc2626; }
+
+      .filter-pills-rec .btn{ font-size:0.8rem; padding:0.3rem 0.8rem; border-radius:8px; }
+
+      .switch-o{ width:38px; height:22px; border-radius:20px; position:relative; cursor:pointer; transition:0.2s; flex-shrink:0; }
+      .switch-o.on{ background:var(--teal); }
+      .switch-o.off{ background:#cbd5e1; }
+      .switch-o .knob{ width:18px; height:18px; border-radius:50%; background:#fff; position:absolute; top:2px; transition:0.2s; }
+      .switch-o.on .knob{ left:18px; }
+      .switch-o.off .knob{ left:2px; }
+
+      .regla-card{ background:#fff; border:1px solid var(--border); border-radius:14px; padding:1rem 1.25rem; margin-bottom:0.9rem; }
+      .regla-tag{ font-size:0.7rem; background:var(--bg); color:#475569; padding:0.15rem 0.55rem; border-radius:6px; display:inline-flex; align-items:center; gap:0.3rem; }
+      .regla-preview{ background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:0.6rem 0.8rem; font-size:0.78rem; color:#475569; margin-top:0.6rem; }
+
+      .hist-item{ display:flex; align-items:center; gap:0.75rem; padding:0.7rem 0; border-bottom:1px solid var(--border); }
+      .hist-item:last-child{ border-bottom:none; }
+      .hist-icon{ width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+
+      .var-chip{ font-size:0.7rem; background:var(--teal-light); color:var(--teal-dark); padding:0.1rem 0.5rem; border-radius:6px; cursor:pointer; font-weight:600; margin-right:0.3rem; }
+      .aplica-pill{ font-size:0.78rem; padding:0.35rem 0.9rem; border-radius:8px; border:1px solid var(--border); background:#fff; color:#475569; cursor:pointer; }
+      .aplica-pill.selected{ background:var(--teal); border-color:var(--teal); color:#fff; }
+
+      .channel-card{ background:#fff; border:1px solid var(--border); border-radius:14px; padding:1.1rem 1.25rem; margin-bottom:1rem; }
+      .channel-icon-box{ width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; }
+</style>
+</head>
+
+<body>
+
+<!--
+  ==========================================================
+  MÓDULO RECORDATORIOS — DATOS MOCK + FLUJO EN MEMORIA
+  4 pestañas: Programados, Reglas, Historial, Configurar Canales.
+  Mismo patrón que los otros módulos. Busca los comentarios [BACKEND].
+  ==========================================================
+-->
+
+<dental-sidebar></dental-sidebar>
+
+<div class="main-content">
+
+  <div class="top-header">
+    <h4>Recordatorios</h4>
+    <div class="d-flex align-items-center gap-3">
+      <dental-notificaciones></dental-notificaciones>
+      <div class="d-flex align-items-center gap-2">
+        <span class="text-muted small" id="adminNombre">Cargando...</span>
+        <div class="avatar-sm" id="adminAvatarInicial">–</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+      <h5 class="fw-bold mb-0">Recordatorios Automáticos</h5>
+      <div class="section-sub text-muted small">Gestiona los recordatorios de citas por correo electrónico</div>
+    </div>
+    <!-- [BACKEND] GET /recordatorios/estado -> refleja si el servicio de envíos está activo -->
+    <span class="system-badge"><span class="dot"></span> Sistema activo</span>
+  </div>
+
+  <!-- [BACKEND] GET /recordatorios/resumen -> {pendientes_hoy, reglas_activas, enviados, tasa_exito} -->
+  <div class="row g-3 mb-3">
+    <div class="col-6 col-lg-3">
+      <div class="card-custom d-flex flex-row align-items-center gap-3">
+        <div class="kpi-icon-o" style="background:#fef3c7; color:#d97706"><i class="bi bi-clock"></i></div>
+        <div><div class="fw-bold fs-5" id="kpiPendientesHoy">--</div><div class="text-muted small">Pendientes hoy</div></div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card-custom d-flex flex-row align-items-center gap-3">
+        <div class="kpi-icon-o" style="background:var(--teal-light); color:var(--teal-dark)"><i class="bi bi-bell"></i></div>
+        <div><div class="fw-bold fs-5" id="kpiReglasActivas">--</div><div class="text-muted small">Reglas activas</div></div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card-custom d-flex flex-row align-items-center gap-3">
+        <div class="kpi-icon-o" style="background:#dcfce7; color:#16a34a"><i class="bi bi-send"></i></div>
+        <div><div class="fw-bold fs-5" id="kpiEnviados">--</div><div class="text-muted small">Enviados</div></div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card-custom d-flex flex-row align-items-center gap-3">
+        <div class="kpi-icon-o" style="background:#dbeafe; color:#2563eb"><i class="bi bi-bar-chart"></i></div>
+        <div><div class="fw-bold fs-5" id="kpiTasaExito">--</div><div class="text-muted small">Tasa de éxito</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="btn-group tabs-recordatorios mb-3" role="group">
+    <button class="btn btn-teal position-relative" id="tabProgramados">
+      <i class="bi bi-calendar-check"></i> Programados <span class="tab-badge" id="badgeProgramados">0</span>
+    </button>
+    <button class="btn btn-outline-soft" id="tabReglas"><i class="bi bi-sliders"></i> Reglas</button>
+    <button class="btn btn-outline-soft" id="tabHistorial"><i class="bi bi-clock-history"></i> Historial</button>
+    <button class="btn btn-outline-soft" id="tabCanales"><i class="bi bi-gear"></i> Configurar Canales</button>
+  </div>
+
+  <!-- ===================== TAB: PROGRAMADOS ===================== -->
+  <div id="vistaProgramados">
+    <div class="row g-3 mb-3">
+      <div class="col-md-4">
+        <div class="card-custom d-flex flex-row align-items-center gap-3">
+          <div class="kpi-icon-o" style="background:#fef3c7; color:#d97706"><i class="bi bi-clock"></i></div>
+          <div><div class="fw-bold fs-5" id="statPorEnviar">--</div><div class="text-muted small">Por enviar</div></div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card-custom d-flex flex-row align-items-center gap-3">
+          <div class="kpi-icon-o" style="background:#dcfce7; color:#16a34a"><i class="bi bi-check2"></i></div>
+          <div><div class="fw-bold fs-5" id="statEnviadosHoy">--</div><div class="text-muted small">Enviados hoy</div></div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card-custom d-flex flex-row align-items-center gap-3">
+          <div class="kpi-icon-o" style="background:#fee2e2; color:#dc2626"><i class="bi bi-x-circle"></i></div>
+          <div><div class="fw-bold fs-5" id="statFallidos">--</div><div class="text-muted small">Fallidos</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+      <div class="btn-group filter-pills-rec" role="group" id="filtroProgramadosGroup">
+        <button class="btn btn-teal" data-estado="">Todos</button>
+        <button class="btn btn-outline-soft" data-estado="pendiente">Pendiente</button>
+        <button class="btn btn-outline-soft" data-estado="enviado">Enviado</button>
+        <button class="btn btn-outline-soft" data-estado="fallido">Fallido</button>
+      </div>
+      <!-- El envío es de un clic por mensaje (ver Configurar Canales) -->
+      <div class="text-muted small">Cada recordatorio se envía manualmente con un clic — ábrelo y confirma el envío</div>
+    </div>
+
+    <div class="card-custom">
+      <div class="table-responsive">
+        <table class="table patients-table mb-0">
+          <thead>
+            <tr><th>Paciente</th><th>Cita</th><th>Canal</th><th>Envío</th><th>Estado</th><th>Acción</th></tr>
+          </thead>
+          <tbody id="tbodyProgramados"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== TAB: REGLAS ===================== -->
+  <div id="vistaReglas" class="d-none">
+    <div class="d-flex justify-content-end mb-3">
+      <!-- [BACKEND] Abre modal Nueva Regla -> al guardar: POST /recordatorios/reglas -->
+      <button class="btn btn-teal" onclick="prepararModalRegla()">
+        <i class="bi bi-plus-lg"></i> Nueva Regla
+      </button>
+    </div>
+    <div id="listaReglas"></div>
+  </div>
+
+  <!-- ===================== TAB: HISTORIAL ===================== -->
+  <div id="vistaHistorial" class="d-none">
+    <div class="row g-3 mb-3">
+      <div class="col-md-4">
+        <div class="card-custom d-flex flex-row align-items-center gap-3">
+          <div class="kpi-icon-o" style="background:#dcfce7; color:#16a34a"><i class="bi bi-send"></i></div>
+          <div><div class="fw-bold fs-5" id="statMensajesEnviados">--</div><div class="text-muted small">Mensajes enviados</div></div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card-custom d-flex flex-row align-items-center gap-3">
+          <div class="kpi-icon-o" style="background:#fee2e2; color:#dc2626"><i class="bi bi-x-circle"></i></div>
+          <div><div class="fw-bold fs-5" id="statFallidosHist">--</div><div class="text-muted small">Fallidos</div></div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card-custom d-flex flex-row align-items-center gap-3">
+          <div class="kpi-icon-o" style="background:#dbeafe; color:#2563eb"><i class="bi bi-bar-chart"></i></div>
+          <div><div class="fw-bold fs-5" id="statTasaExitoHist">--</div><div class="text-muted small">Tasa de éxito</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 mb-3">
+      <div class="flex-grow-1" style="min-width:220px;">
+        <div class="input-group">
+          <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+          <input type="text" class="form-control border-start-0" id="filtroHistBusqueda" placeholder="Buscar paciente o tratamiento...">
+        </div>
+      </div>
+      <select class="form-select" id="filtroHistCanal" style="max-width:180px;">
+        <option value="">Todos los canales</option>
+        <option value="email">Email</option>
+      </select>
+      <select class="form-select" id="filtroHistEstado" style="max-width:180px;">
+        <option value="">Todos los estados</option>
+        <option value="enviado">Enviado</option>
+        <option value="fallido">Fallido</option>
+      </select>
+    </div>
+
+    <div class="card-custom" id="listaHistorial"></div>
+  </div>
+
+  <!-- ===================== TAB: CONFIGURAR CANALES ===================== -->
+  <div id="vistaCanales" class="d-none">
+    <div class="card-custom">
+      <div class="d-flex justify-content-between align-items-start">
+        <div class="d-flex gap-3">
+          <div class="channel-icon-box" style="background:#dbeafe; color:#2563eb"><i class="bi bi-envelope"></i></div>
+          <div>
+            <div class="fw-bold">Correo Electrónico</div>
+            <div class="text-muted small">Recordatorios al email del paciente</div>
+          </div>
+        </div>
+        <div class="switch-o on" id="switchEmail"><div class="knob"></div></div>
+      </div>
+      <div class="row g-3 mt-2">
+        <div class="col-md-6">
+          <div class="form-label small fw-semibold">Email remitente</label>
+          <input type="email" class="form-control" id="emailRemitente" value="recordatorios@dentalcare.mx">
+        </div>
+        <div class="col-md-6">
+          <div class="form-label small fw-semibold">Nombre del remitente</label>
+          <input type="text" class="form-control" id="emailNombreRemitente" value="DentalCare">
+        </div>
+        <div class="col-md-12">
+          <div class="form-label small fw-semibold">Asunto del correo</label>
+          <input type="text" class="form-control" id="emailAsunto" value="Recordatorio de tu cita en DentalCare">
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-teal" id="btnGuardarCanales"><i class="bi bi-save"></i> Guardar configuración</button>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ============================================================ -->
+<!-- MODAL: NUEVA / EDITAR REGLA -->
+<!-- [BACKEND] Nueva -> POST /recordatorios/reglas | Editar -> PUT /recordatorios/reglas/:id -->
+<!-- ============================================================ -->
+<div class="modal fade" id="modalRegla" tabindex="-1">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold mb-0" id="modalReglaTitulo">Nueva Regla</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formRegla">
+          <input type="hidden" name="reglaId">
+          <div class="mb-3">
+            <div class="form-label small fw-semibold">Nombre de la regla</label>
+            <input type="text" class="form-control" name="nombre" placeholder="Ej: Recordatorio 24h antes" required>
+          </div>
+          <div class="mb-3">
+            <div class="form-label small fw-semibold">Descripción</label>
+            <input type="text" class="form-control" name="descripcion" placeholder="Descripción breve">
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <div class="form-label small fw-semibold">Timing</label>
+              <select class="form-select" name="timing">
+                <option value="antes">Antes de</option>
+                <option value="despues">Después de</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <div class="form-label small fw-semibold">Horas</label>
+              <input type="number" class="form-control" name="horas" value="24" min="1" required>
+            </div>
+            <div class="col-md-4">
+              <div class="form-label small fw-semibold">Canal</label>
+              <select class="form-select" name="canal">
+                <option value="email">Email</option>
+              </select>
+            </div>
+          </div>
+          <div class="mb-3">
+            <div class="form-label small fw-semibold d-block">Aplica a</label>
+            <div class="d-flex gap-2" id="aplicaAGroup">
+              <div class="aplica-pill selected" data-valor="todas">Todas Las Citas</div>
+              <div class="aplica-pill" data-valor="confirmadas">Solo Confirmadas</div>
+              <div class="aplica-pill" data-valor="pendientes">Solo Pendientes</div>
+            </div>
+            <input type="hidden" name="aplicaA" value="todas">
+          </div>
+          <div class="mb-1">
+            <div class="form-label small fw-semibold d-block">Plantilla del mensaje</label>
+            <div class="mb-1">
+              <span class="var-chip" data-var="{{nombre}}">{{nombre}}</span>
+              <span class="var-chip" data-var="{{fecha}}">{{fecha}}</span>
+              <span class="var-chip" data-var="{{hora}}">{{hora}}</span>
+              <span class="var-chip" data-var="{{tratamiento}}">{{tratamiento}}</span>
+            </div>
+            <textarea class="form-control" name="mensaje" id="mensajeReglaInput" rows="3" maxlength="500" placeholder="Hola {{nombre}}, le recordamos que tiene una cita...">Hola {{nombre}}, le recordamos que tiene una cita el {{fecha}} a las {{hora}} para {{tratamiento}}.</textarea>
+            <div class="text-end text-muted small mt-1"><span id="contadorMensajeRegla">0</span>/500</div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-soft" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="formRegla" class="btn btn-teal" id="btnGuardarRegla">Guardar Regla</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../scripts/components/admin-sidebar.js"></script>
+<script src="../scripts/components/admin-sesion.js"></script>
+<script src="../scripts/components/admin-notificaciones.js"></script>
+<script src="../scripts/components/admin-recordatorios.js"></script>
+
+</body>
+</html>

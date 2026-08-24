@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DentalCare · Portal del Paciente</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="https://api.iconify.design/fluent-emoji-flat:tooth.svg">
+  <link rel="stylesheet" href="../styles/portal.css">
+</head>
+
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar py-2">
+  <div class="container d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center gap-2">
+      <div class="navbar-brand-icon"><i class="fa-solid fa-tooth"></i></div>
+      <div>
+        <div class="brand-title">DentalCare</div>
+        <div class="brand-sub">Portal del Paciente</div>
+      </div>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+      <!-- [BACKEND] GET /api/sesion.php
+           Reemplazar "Paciente" por $_SESSION['usuario_nombre'] -->
+      <div class="text-end">
+        <div class="fw-semibold" style="font-size:.85rem;" id="nombrePaciente">Paciente</div>
+        <div class="role-pill">Paciente</div>
+      </div>
+      <!-- [BACKEND] POST /auth/CerrarSesion.php -->
+      <i class="fa-solid fa-right-from-bracket logout-btn" id="btnLogout"></i>
+    </div>
+  </div>
+</div>
+
+<div class="container py-4">
+
+  <!-- HERO -->
+  <div class="hero-banner mb-4">
+    <div class="eyebrow">Bienvenido de vuelta</div>
+    <h2 id="heroNombre">Paciente</h2>
+    <div class="tagline">Tu salud dental, nuestra prioridad</div>
+  </div>
+
+  <!-- STAT CARDS -->
+  <!-- [BACKEND] GET /api/pacientes/dashboard.php
+       Llena statCitasProximas y statSaldoPendiente (portal-dashboard.js).
+       statTratamientosActivos se queda pendiente hasta construir
+       el módulo de Tratamientos — no hay tabla real de la cual sacarlo aún. -->
+  <div class="row g-3 mb-4">
+    <div class="col-4">
+      <div class="stat-card">
+        <div class="stat-icon teal"><i class="fa-regular fa-calendar-check"></i></div>
+        <div class="stat-value" id="statCitasProximas">–</div>
+        <div class="stat-label">Citas próximas</div>
+      </div>
+    </div>
+    <div class="col-4">
+      <div class="stat-card">
+        <div class="stat-icon violet"><i class="fa-solid fa-tooth"></i></div>
+        <div class="stat-value" id="statTratamientosActivos">–</div>
+        <div class="stat-label">Tratamientos activos</div>
+      </div>
+    </div>
+    <div class="col-4">
+      <div class="stat-card">
+        <div class="stat-icon amber"><i class="fa-regular fa-credit-card"></i></div>
+        <div class="stat-value" id="statSaldoPendiente">–</div>
+        <div class="stat-label">Saldo pendiente</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL -->
+  <div class="panel">
+    <ul class="nav nav-tabs dental-tabs" id="portalTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-citas" type="button">
+          <i class="fa-regular fa-calendar me-1"></i>Mis Citas
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-historial" type="button">
+          <i class="fa-solid fa-clock-rotate-left me-1"></i>Historial
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-tratamientos" type="button">
+          <i class="fa-solid fa-tooth me-1"></i>Tratamientos
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-cuenta" type="button">
+          <i class="fa-regular fa-id-card me-1"></i>Mi Cuenta
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-consentimientos" type="button">
+          <i class="fa-regular fa-file-lines me-1"></i>Consentimientos
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-recetas" type="button">
+          <i class="fa-solid fa-file-prescription me-1"></i>Recetas
+        </button>
+      </li>
+    </ul>
+
+    <div class="tab-content p-3 p-md-4">
+
+      <!-- ============================================ -->
+      <!-- MIS CITAS                                     -->
+      <!-- Lógica en: scripts/components/portal-citas.js -->
+      <!-- ============================================ -->
+      <div class="tab-pane fade show active" id="tab-citas">
+        <div class="section-label mb-3">Próximas citas</div>
+
+        <!-- [BACKEND] GET /api/pacientes/citas/listar.php?estado=proximas
+             Este contenedor se llena por completo desde portal-citas.js.
+             Si después de cargar la página sigue diciendo "Cargando...",
+             el fetch está fallando (revisa la pestaña Network). -->
+        <div id="citasProximasList" class="d-flex flex-column gap-3">
+          <div class="text-muted small">Cargando citas...</div>
+        </div>
+
+        <button class="cta-btn w-100 mt-3" data-bs-toggle="modal" data-bs-target="#modalCita">
+          <i class="fa-regular fa-calendar-plus me-2"></i>Solicitar Nueva Cita
+        </button>
+      </div>
+
+      <!-- ================================================= -->
+      <!-- HISTORIAL                                          -->
+      <!-- Lógica en: scripts/components/portal-historial.js  -->
+      <!-- ================================================= -->
+      <div class="tab-pane fade" id="tab-historial">
+
+        <!-- [BACKEND] GET /api/historial-resumen.php
+             Devuelve: { visitas_totales, doctores_atendidos, total_pagado } -->
+        <div class="row g-3 mb-3">
+          <div class="col-4">
+            <div class="stat-card text-center py-3">
+              <div class="stat-value" style="font-size:1.2rem;" id="histVisitasTotales">–</div>
+              <div class="stat-label">Visitas totales</div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="stat-card text-center py-3">
+              <div class="stat-value" style="font-size:1.2rem;" id="histDoctoresAtendidos">–</div>
+              <div class="stat-label">Doctores atendidos</div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="stat-card text-center py-3">
+              <div class="stat-value" style="font-size:1.2rem;" id="histTotalPagado">–</div>
+              <div class="stat-label">Total pagado</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 mb-3 flex-wrap">
+          <button class="filter-chip active" data-filter="Todas">Todas</button>
+          <button class="filter-chip cat-Preventivo" data-filter="Preventivo">Preventivo</button>
+          <button class="filter-chip cat-Ortodoncia" data-filter="Ortodoncia">Ortodoncia</button>
+          <button class="filter-chip cat-Restaurativo" data-filter="Restaurativo">Restaurativo</button>
+        </div>
+
+        <!-- [BACKEND] GET /api/pacientes/citas/listar.php?estado=completada
+             Devuelve { resumen, citas }. Se llena por completo desde
+             portal-historial.js. Si se queda en "Cargando...", revisa Network. -->
+        <div id="historyList" class="d-flex flex-column gap-3">
+          <div class="text-muted small">Cargando historial...</div>
+        </div>
+      </div>
+
+      <!-- ===================================================== -->
+      <!-- TRATAMIENTOS                                           -->
+      <!-- Lógica en: scripts/components/portal-tratamientos.js   -->
+      <!-- ===================================================== -->
+      <div class="tab-pane fade" id="tab-tratamientos">
+        <!-- [BACKEND] GET /api/tratamientos.php?estado=activo
+             El texto "Tienes N tratamientos activos" se arma en JS
+             a partir de la cantidad de resultados -->
+        <div class="text-muted small mb-3" id="tratamientosResumen"></div>
+
+        <div id="tratamientosList" class="d-flex flex-column gap-3">
+          <div class="text-muted small">Cargando tratamientos...</div>
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- MI CUENTA                                       -->
+      <!-- Lógica en: scripts/components/portal-cuenta.js  -->
+      <!-- [BACKEND] GET /api/pacientes/cuenta/saldo.php
+           saldo_total = SUM(costo_total - monto_pagado) de tratamientos
+           + SUM(costo) de citas sueltas no pagadas -->
+      <div class="tab-pane fade" id="tab-cuenta">
+        <div class="balance-banner mb-4 d-flex justify-content-between align-items-center">
+          <div>
+            <div class="small opacity-75">Saldo total pendiente</div>
+            <div class="fs-2 fw-bold" id="saldoTotalPendiente">–</div>
+            <div class="small opacity-75">Para realizar pagos contáctanos directamente en clínica.</div>
+          </div>
+          <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
+            <i class="fa-solid fa-dollar-sign fs-5"></i>
+          </div>
+        </div>
+
+        <div class="section-label mb-2">Detalle de saldo pendiente</div>
+
+        <div id="cuentaDetalleList">
+          <div class="text-muted small">Cargando...</div>
+        </div>
+
+        <div class="mt-4 p-3 rounded-3" style="background:var(--teal-50); border:1px solid var(--teal-100);">
+          <i class="fa-regular fa-circle-question me-1" style="color:var(--teal-600);"></i>
+          <strong>¿Cómo realizar tu pago?</strong>
+          <div class="text-muted small mt-1">Puedes realizar tus pagos directamente en clínica (efectivo, tarjeta o transferencia) o llamarnos para coordinar. Emitimos comprobante por cada pago.</div>
+        </div>
+
+        <!-- Seccion Cambiar contraseña corregida -->
+        <div class="section-label mb-2 mt-4">Cambiar mi contraseña</div>
+        <form id="formCambiarPassword" class="p-3 rounded-3" style="background:#f8fafc; border:1px solid #e2e8f0;">
+          <div class="mb-2">
+            <label for="pwActualPortal" class="form-label small fw-semibold">Contraseña actual</label>
+            <input type="password" class="form-control form-control-sm" id="pwActualPortal" required>
+          </div>
+          <div class="mb-2">
+            <label for="pwNuevaPortal" class="form-label small fw-semibold">Nueva contraseña</label>
+            <input type="password" class="form-control form-control-sm" id="pwNuevaPortal" minlength="6" required>
+          </div>
+          <div class="mb-3">
+            <label for="pwConfirmarPortal" class="form-label small fw-semibold">Confirmar nueva contraseña</label>
+            <input type="password" class="form-control form-control-sm" id="pwConfirmarPortal" minlength="6" required>
+          </div>
+          <button type="submit" class="cta-btn w-100"><i class="fa-solid fa-lock me-1"></i>Actualizar contraseña</button>
+        </form>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- CONSENTIMIENTOS                                              -->
+      <!-- Lógica en: scripts/components/portal-consentimientos.js      -->
+      <!-- [BACKEND] GET  /api/pacientes/consentimientos/listar.php
+                     POST /api/pacientes/consentimientos/firmar.php
+                          body: { consentimientoId, estado, firma } -->
+      <!-- ============================================================ -->
+      <div class="tab-pane fade" id="tab-consentimientos">
+        <div class="text-muted small mb-3" id="consentimientosResumen"></div>
+        <div id="consentimientosList" class="d-flex flex-column gap-3">
+          <div class="text-muted small">Cargando consentimientos...</div>
+        </div>
+      </div>
+
+      <!-- ============================================ -->
+      <!-- RECETAS (solo lectura)                        -->
+      <!-- Lógica en: scripts/components/portal-recetas.js -->
+      <!-- ============================================ -->
+      <div class="tab-pane fade" id="tab-recetas">
+        <div class="text-muted small mb-3" id="recetasResumen"></div>
+        <div id="recetasList" class="d-flex flex-column gap-3">
+          <div class="text-muted small">Cargando recetas...</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ================================================== -->
+<!-- MODAL SOLICITAR CITA                                -->
+<!-- Lógica en: scripts/components/portal-modal-cita.js  -->
+<!-- ================================================== -->
+<div class="modal fade" id="modalCita" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <div>
+          <h5 class="modal-title fw-bold mb-0">Solicitar Cita</h5>
+          <div id="stepLabel" class="text-muted small">Paso 1 de 2</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="px-3">
+        <div class="step-progress" id="stepProgress"></div>
+      </div>
+
+      <div class="modal-body pt-3">
+
+        <!-- STEP 1: elegir servicio -->
+        <!-- [BACKEND] GET /api/servicios.php?activo=1
+             Reemplazar los service-option estáticos por un foreach
+             de la tabla servicios. data-price y data-duration deben
+             venir de ahí, no quedar fijos en el HTML. -->
+        <div id="step1">
+          <div class="fw-semibold mb-3">¿Qué tipo de atención necesitas?</div>
+          <div class="d-flex flex-column gap-2" id="serviceList">
+            <div class="service-option selected" data-servicio-id="1" data-name="Limpieza Dental" data-price="$50" data-duration="45 min">
+              <div class="fw-semibold">Limpieza Dental</div>
+              <div class="text-muted small">Preventivo · 45 min</div>
+              <div class="price position-absolute" style="top:.85rem; right:1rem;">$50</div>
+              <div class="check-badge"><i class="fa-solid fa-check"></i></div>
+            </div>
+            <div class="service-option" data-servicio-id="2" data-name="Consulta General" data-price="$60" data-duration="30 min">
+              <div class="fw-semibold">Consulta General</div>
+              <div class="text-muted small">Preventivo · 30 min</div>
+              <div class="price position-absolute" style="top:.85rem; right:1rem;">$60</div>
+            </div>
+            <div class="service-option" data-servicio-id="3" data-name="Blanqueamiento" data-price="$250" data-duration="90 min">
+              <div class="fw-semibold">Blanqueamiento</div>
+              <div class="text-muted small">Estético · 90 min</div>
+              <div class="price position-absolute" style="top:.85rem; right:1rem;">$250</div>
+            </div>
+            <div class="service-option" data-servicio-id="4" data-name="Resina Dental" data-price="$100" data-duration="45 min">
+              <div class="fw-semibold">Resina Dental</div>
+              <div class="text-muted small">Restaurativo · 45 min</div>
+              <div class="price position-absolute" style="top:.85rem; right:1rem;">$100</div>
+            </div>
+            <div class="service-option" data-servicio-id="5" data-name="Extracción Simple" data-price="$80" data-duration="30 min">
+              <div class="fw-semibold">Extracción Simple</div>
+              <div class="text-muted small">Cirugía · 30 min</div>
+              <div class="price position-absolute" style="top:.85rem; right:1rem;">$80</div>
+            </div>
+            <div class="service-option" data-servicio-id="6" data-name="Endodoncia" data-price="$350" data-duration="120 min">
+              <div class="fw-semibold">Endodoncia</div>
+              <div class="text-muted small">Restaurativo · 120 min</div>
+              <div class="price position-absolute" style="top:.85rem; right:1rem;">$350</div>
+            </div>
+            <div class="service-option" data-servicio-id="7" data-name="Control de Ortodoncia" data-price="$120" data-duration="30 min">
+              <div class="fw-semibold">Control de Ortodoncia</div>
+              <div class="text-muted small">Ortodoncia · 30 min</div>
+              <div class="price position-absolute" style="top:.85rem; right:1rem;">$120</div>
+            </div>
+            <div class="service-option" data-servicio-id="8" data-name="Tratamiento Periodontal" data-price="$200" data-duration="90 min">
+              <div class="fw-semibold">Tratamiento Periodontal</div>
+              <div class="text-muted small">Preventivo · 90 min</div>
+              <div class="price position-absolute" style="top:.85rem; right:1rem;">$200</div>
+            </div>
+          </div>
+          <button class="cta-btn w-100 mt-4" id="btnContinuar">Continuar</button>
+        </div>
+
+        <!-- STEP 2: elegir doctor + fecha + notas -->
+        <!-- [BACKEND] GET /api/doctores.php
+             Reemplazar doctor-option estáticos con foreach de doctores activos -->
+        <!-- Paso 2 del Modal Solicitud de Cita corregido -->
+        <div id="step2" class="d-none">
+          <div class="d-flex justify-content-between align-items-center rounded-3 p-3 mb-3" style="background:var(--teal-50); border:1px solid var(--teal-100);">
+            <div class="d-flex align-items-center gap-2">
+              <div class="doctor-avatar"><i class="fa-solid fa-tooth"></i></div>
+              <div>
+                <div class="fw-semibold" id="selService">Limpieza Dental</div>
+                <div class="text-muted small" id="selDetail">45 min · $50</div>
+              </div>
+            </div>
+            <a href="#" class="small fw-semibold" id="btnCambiar" style="color:var(--teal-600); text-decoration:none;">Cambiar</a>
+          </div>
+
+          <span class="d-block fw-semibold small mb-2">Selecciona un doctor</span>
+          <div class="d-flex flex-column gap-2 mb-3" id="doctorList">
+            <div class="doctor-option d-flex align-items-center gap-2" data-doctor-id="1" data-name="Dr. Carlos Ramírez">
+              <div class="doctor-avatar"><i class="fa-solid fa-user"></i></div>
+              <div><div class="fw-semibold small">Dr. Carlos Ramírez</div><div class="text-muted small">Odontología General</div></div>
+            </div>
+            <div class="doctor-option d-flex align-items-center gap-2" data-doctor-id="2" data-name="Dra. Laura Mendoza">
+              <div class="doctor-avatar"><i class="fa-solid fa-user"></i></div>
+              <div><div class="fw-semibold small">Dra. Laura Mendoza</div><div class="text-muted small">Ortodoncia</div></div>
+            </div>
+            <div class="doctor-option d-flex align-items-center gap-2" data-doctor-id="3" data-name="Dr. Diego Torres">
+              <div class="doctor-avatar"><i class="fa-solid fa-user"></i></div>
+              <div><div class="fw-semibold small">Dr. Diego Torres</div><div class="text-muted small">Endodoncia</div></div>
+            </div>
+          </div>
+
+          <label for="fechaPreferida" class="fw-semibold small mb-1">Fecha preferida</label>
+          <input type="date" class="form-control mb-3" id="fechaPreferida">
+
+          <span class="d-block fw-semibold small mb-1">Hora disponible</span>
+          <div id="horariosDisponibles" class="mb-3">
+            <div class="text-muted small">Selecciona doctor y fecha primero.</div>
+          </div>
+
+          <label for="notasTxt" class="fw-semibold small mb-1">Notas adicionales <span class="text-muted fw-normal">(opcional)</span></label>
+          <textarea class="form-control mb-1" rows="3" maxlength="500" placeholder="Síntomas, alergias o información relevante..." id="notasTxt"></textarea>
+          <div class="text-muted small text-end mb-3"><span id="notasCount">0</span>/500</div>
+
+          <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary flex-fill" id="btnAtras">Atrás</button>
+            <button class="btn flex-fill text-white" style="background:#c7d0ce;" id="btnEnviar" disabled>
+              <i class="fa-regular fa-paper-plane me-1"></i>Enviar Solicitud
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================== -->
+<!-- MODAL VER / FIRMAR CONSENTIMIENTO                   -->
+<!-- Lógica en: scripts/components/portal-consentimientos.js -->
+<!-- ================================================== -->
+<div class="modal fade" id="modalConsentimiento" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold mb-0" id="mcTitulo">Consentimiento</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body pt-2">
+        <div class="text-muted small mb-3" id="mcMeta"></div>
+        <div class="p-3 rounded-3 mb-3" style="background:var(--teal-50); border:1px solid var(--teal-100); white-space:pre-line; font-size:0.88rem; max-height:280px; overflow-y:auto;" id="mcTexto"></div>
+
+      <div id="mcZonaFirma">
+        <label for="mcInputFirma" class="fw-semibold small mb-1">Escribe tu nombre completo para firmar</label>
+        <input type="text" class="form-control mb-1" id="mcInputFirma" placeholder="Tu nombre completo">
+        <div class="text-danger small mb-2 d-none" id="mcErrorFirma">Escribe tu nombre completo para firmar.</div>
+
+        <div id="mcConfirmarRechazo" class="d-none p-3 rounded-3 mb-2" style="background:#fef2f2; border:1px solid #fecaca;">
+          <div class="small mb-2">¿Seguro que quieres rechazar este consentimiento? Coméntalo con tu doctor si tienes dudas.</div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary btn-sm flex-fill" id="mcBtnCancelarRechazo">Cancelar</button>
+            <button class="btn btn-danger btn-sm flex-fill" id="mcBtnConfirmarRechazo">Sí, rechazar</button>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2" id="mcBotonesPrincipales">
+          <button class="btn btn-outline-secondary flex-fill" id="mcBtnRechazar">Rechazar</button>
+          <button class="cta-btn flex-fill" id="mcBtnFirmar"><i class="fa-solid fa-signature me-1"></i>Firmar</button>
+        </div>
+      </div>
+
+        <div id="mcZonaResultado" class="d-none p-3 rounded-3 text-center" style="background:#f1f5f9;">
+          <div class="fw-semibold" id="mcResultadoTexto"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================== -->
+<!-- MODAL VER RECETA (solo lectura, con opción de imprimir) -->
+<!-- Lógica en: scripts/components/portal-recetas.js    -->
+<!-- ================================================== -->
+<div class="modal fade" id="modalReceta" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <div>
+          <h5 class="modal-title fw-bold mb-0" id="rxFolio">--</h5>
+          <div class="text-muted small" id="rxMeta"></div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body pt-2">
+        <div class="small mb-3" id="rxDiagnostico"></div>
+        <div id="rxMedicamentosContainer"></div>
+        <div class="text-muted small mt-3" id="rxIndicacionesWrap"><strong>Indicaciones generales:</strong><div id="rxIndicaciones"></div></div>
+        <div class="text-muted small mt-2" id="rxProximaCitaWrap"><strong>Próxima cita:</strong> <span id="rxProximaCita"></span></div>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-outline-secondary flex-fill" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="cta-btn flex-fill" id="rxBtnImprimir"><i class="fa-solid fa-print me-1"></i>Imprimir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== ZONA IMPRIMIBLE (solo visible al imprimir) ===================== -->
+<div id="recetaImprimirArea" style="display:none;">
+  <div style="display:flex; justify-content:space-between; border-bottom:2px solid #0d9488; padding-bottom:1rem; margin-bottom:1rem;">
+    <div>
+      <h3 style="margin:0; color:#0d9488;">DentalCare</h3>
+      <div style="font-size:0.85rem; color:#555;">Receta Médica</div>
+    </div>
+    <div style="text-align:right; font-size:0.85rem;">
+      <div><strong id="prFolio"></strong></div>
+      <div id="prFecha"></div>
+    </div>
+  </div>
+  <div style="margin-bottom:1rem; font-size:0.92rem;">
+    <div><strong>Paciente:</strong> <span id="prPaciente"></span></div>
+    <div><strong>Doctor:</strong> <span id="prDoctor"></span></div>
+    <div><strong>Diagnóstico:</strong> <span id="prDiagnostico"></span></div>
+  </div>
+  <div id="prMedicamentos"></div>
+  <div id="prIndicacionesWrap" style="margin-top:1rem; font-size:0.92rem;"><strong>Indicaciones generales:</strong><div id="prIndicaciones"></div></div>
+  <div id="prProximaCitaWrap" style="margin-top:1rem; font-size:0.92rem;"><strong>Próxima cita:</strong> <span id="prProximaCita"></span></div>
+  <div style="margin-top:3rem; text-align:center;">
+    <div style="border-top:1px solid #333; width:250px; margin:0 auto; padding-top:0.5rem; font-size:0.85rem;">Firma del odontólogo</div>
+  </div>
+</div>
+
+<style>
+  @media print {
+    body > *:not(#recetaImprimirArea) { display:none !important; }
+    #recetaImprimirArea{ display:block !important; max-width:700px; margin:0 auto; font-family:Arial,sans-serif; }
+    .pr-medicamento{ border:1px solid #ccc; border-radius:6px; padding:0.6rem 0.8rem; margin-bottom:0.5rem; }
+  }
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+
+<!-- Cada módulo del portal vive en su propio archivo -->
+<script src="../scripts/components/portal-sesion.js"></script>
+<script src="../scripts/components/portal-dashboard.js"></script>
+<script src="../scripts/components/portal-citas.js"></script>
+<script src="../scripts/components/portal-historial.js"></script>
+<script src="../scripts/components/portal-tratamientos.js"></script>
+<script src="../scripts/components/portal-cuenta.js"></script>
+<script src="../scripts/components/portal-consentimientos.js"></script>
+<script src="../scripts/components/portal-recetas.js"></script>
+<script src="../scripts/components/portal-modal-cita.js"></script>
+
+</body>
+</html>

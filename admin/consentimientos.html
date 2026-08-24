@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <title>DentalCare - Consentimientos Informados</title>
+    <link rel="stylesheet" href="../styles/portal.css">
+    <script src="../scripts/components/admin-head-loader.js"></script>    <style>
+      .kpi-row-icon{
+        width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0;
+      }
+      .filter-pills .btn{ font-size:0.8rem; padding:0.3rem 0.8rem; border-radius:8px; }
+      .status-firmado{ background:#dcfce7; color:#16a34a; }
+      .status-pendiente{ background:#fef3c7; color:#d97706; }
+      .status-rechazado{ background:#fee2e2; color:#dc2626; }
+      .firma-cursiva{ font-style:italic; color:#334155; }
+      .firma-vacia{ color:#94a3b8; }
+
+      .tipo-card{
+        border:1px solid var(--border); border-radius:12px; padding:0.85rem 1rem; cursor:pointer; height:100%;
+        display:flex; gap:0.7rem; align-items:flex-start;
+      }
+      .tipo-card:hover{ border-color:var(--teal); }
+      .tipo-card.selected{ border-color:var(--teal); background:var(--teal-light); }
+      .tipo-card .icon-box{
+        width:34px; height:34px; border-radius:9px; background:var(--teal-light); color:var(--teal-dark);
+        display:flex; align-items:center; justify-content:center; flex-shrink:0;
+      }
+      .tipo-card .title{ font-weight:700; font-size:0.85rem; }
+      .tipo-card .desc{ font-size:0.72rem; color:var(--text-muted); }
+
+      .preview-box{
+        background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:0.9rem 1rem;
+        max-height:180px; overflow-y:auto; font-size:0.8rem; color:#334155; white-space:pre-line;
+      }
+</style>
+</head>
+
+<body>
+
+<!--
+  ==========================================================
+  MÓDULO CONSENTIMIENTOS — DATOS MOCK + FLUJO EN MEMORIA
+  Mismo patrón que los otros módulos. Busca los comentarios [BACKEND].
+  ==========================================================
+-->
+
+<dental-sidebar></dental-sidebar>
+
+<div class="main-content">
+
+  <div class="top-header">
+    <h4>Consentimientos Informados</h4>
+    <div class="d-flex align-items-center gap-3">
+      <dental-notificaciones></dental-notificaciones>
+      <div class="d-flex align-items-center gap-2">
+        <span class="text-muted small" id="adminNombre">Cargando...</span>
+        <div class="avatar-sm" id="adminAvatarInicial">–</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+      <h5 class="fw-bold mb-0">Gestión de Consentimientos</h5>
+      <div class="section-sub text-muted small">Genera, gestiona y archiva los consentimientos de tus pacientes</div>
+    </div>
+    <!-- [BACKEND] Abre modal Generar Consentimiento -> al guardar: POST /consentimientos -->
+    <button class="btn btn-teal" data-bs-toggle="modal" data-bs-target="#modalConsentimiento" onclick="prepararModalConsentimiento()">
+      <i class="bi bi-file-earmark-plus"></i> Nuevo Consentimiento
+    </button>
+  </div>
+
+  <!-- [BACKEND] GET /consentimientos/resumen -> {total, pendientes, firmados, rechazados} -->
+  <div class="row g-3 mb-3">
+    <div class="col-6 col-lg-3">
+      <div class="card-custom d-flex flex-row align-items-center gap-3">
+        <div class="kpi-row-icon" style="background:var(--teal-light); color:var(--teal-dark)"><i class="bi bi-file-earmark-text"></i></div>
+        <div><div class="fw-bold fs-5" id="kpiTotal">--</div><div class="text-muted small">Total</div></div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card-custom d-flex flex-row align-items-center gap-3">
+        <div class="kpi-row-icon" style="background:#fef3c7; color:#d97706"><i class="bi bi-clock"></i></div>
+        <div><div class="fw-bold fs-5" id="kpiPendientes">--</div><div class="text-muted small">Pendientes</div></div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card-custom d-flex flex-row align-items-center gap-3">
+        <div class="kpi-row-icon" style="background:#dcfce7; color:#16a34a"><i class="bi bi-shield-check"></i></div>
+        <div><div class="fw-bold fs-5" id="kpiFirmados">--</div><div class="text-muted small">Firmados</div></div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card-custom d-flex flex-row align-items-center gap-3">
+        <div class="kpi-row-icon" style="background:#fee2e2; color:#dc2626"><i class="bi bi-x-circle"></i></div>
+        <div><div class="fw-bold fs-5" id="kpiRechazados">--</div><div class="text-muted small">Rechazados</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <!-- [BACKEND] GET /consentimientos?buscar=&estado= -->
+  <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+    <div class="flex-grow-1" style="min-width:240px;">
+      <div class="input-group">
+        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+        <input type="text" class="form-control border-start-0" id="filtroBusqueda" placeholder="Buscar por paciente o tratamiento...">
+      </div>
+    </div>
+    <div class="btn-group filter-pills" role="group" id="filtroEstadoGroup">
+      <button class="btn btn-teal" data-estado="">Todos</button>
+      <button class="btn btn-outline-soft" data-estado="pendiente">Pendiente</button>
+      <button class="btn btn-outline-soft" data-estado="firmado">Firmado</button>
+      <button class="btn btn-outline-soft" data-estado="rechazado">Rechazado</button>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="card-custom">
+    <div class="table-responsive">
+      <table class="table patients-table mb-0">
+        <thead>
+          <tr>
+            <th>Paciente</th><th>Tratamiento</th><th>Fecha</th><th>Estado</th><th>Firma</th><th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyConsentimientos"></tbody>
+      </table>
+      <div class="empty-state d-none" id="consentimientosEmptyState">
+        <i class="bi bi-file-earmark-text"></i>
+        <div>No hay consentimientos registrados</div>
+        <div class="small-note">Fuente: tabla "consentimientos" (GET /consentimientos)</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ============================================================ -->
+<!-- MODAL: GENERAR CONSENTIMIENTO -->
+<!-- [BACKEND] Al enviar -> POST /consentimientos {paciente, tipo, fecha, texto_generado} -->
+<!-- ============================================================ -->
+<div class="modal fade" id="modalConsentimiento" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold mb-0">Generar Consentimiento</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <label class="form-label small fw-semibold" for="selectPacienteConsentimiento">Paciente</label>
+        <!-- [BACKEND] GET /api/admin/citas/catalogos/pacientes.php (se reutiliza el mismo catálogo) -->
+        <select class="form-select mb-3" id="selectPacienteConsentimiento">
+          <option value="">Cargando pacientes...</option>
+        </select>
+
+        <div class="form-label small fw-semibold">Tipo de Consentimiento</div>
+        <div class="row g-2 mb-3" id="tiposConsentimientoGrid"></div>
+
+        <div class="form-label small fw-semibold">Vista Previa del Documento</div>
+        <div class="preview-box" id="previewDocumento"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-soft" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-teal" id="btnGenerarConsentimiento" disabled>Generar Consentimiento</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: VER DOCUMENTO -->
+<!-- ============================================================ -->
+<div class="modal fade" id="modalVerDocumento" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title fw-bold mb-0" id="verDocTitulo">--</h5>
+          <div class="text-muted small" id="verDocMeta">--</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <span class="status-badge" id="verDocEstadoBadge">--</span>
+        </div>
+        <div class="preview-box" id="verDocTexto" style="max-height:none;"></div>
+        <div class="text-muted small mt-2" id="verDocFirma"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-soft" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: FIRMAR CONSENTIMIENTO -->
+<!-- ============================================================ -->
+<div class="modal fade" id="modalFirmarConsentimiento" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold mb-0">Firmar Consentimiento</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="firmarConsentimientoId">
+        <label class="form-label small fw-semibold" for="inputNombreFirma">Nombre completo del paciente que firma</label>
+        <input type="text" class="form-control" id="inputNombreFirma" autocomplete="off" placeholder="Nombre completo">
+        <div class="form-text">Se registrará como la firma de este consentimiento.</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-soft" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-teal" id="btnConfirmarFirma">Confirmar Firma</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../scripts/components/admin-sidebar.js"></script>
+<script src="../scripts/components/admin-sesion.js"></script>
+<script src="../scripts/components/admin-notificaciones.js"></script>
+<script src="../scripts/components/admin-consentimientos.js"></script>
+
+</body>
+</html>

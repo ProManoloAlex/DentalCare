@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <title>DentalCare - Inventario</title>
+    <link rel="stylesheet" href="../styles/portal.css">
+    <script src="../scripts/components/admin-head-loader.js"></script>    <style>
+      .kpi-inv{ background:#fff; border:1px solid var(--border); border-radius:14px; padding:1rem 1.1rem; height:100%; display:flex; align-items:center; gap:0.8rem; }
+      .kpi-inv .icon-round{ width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
+      .kpi-inv .val{ font-size:1.35rem; font-weight:700; }
+      .kpi-inv .lbl{ font-size:0.78rem; color:#475569; }
+
+      .tabs-inv .btn{ font-size:0.83rem; }
+
+      .alert-badge-count{ background:#dc2626; color:#fff; font-size:0.72rem; font-weight:700; padding:0.15rem 0.6rem; border-radius:20px; }
+      .alert-stock-item{ background:#fef2f2; border:1px solid #fecaca; border-radius:10px; padding:0.75rem 1rem; margin-bottom:0.7rem; }
+      .alert-stock-item:last-child{ margin-bottom:0; }
+      .cat-pill-inv{ font-size:0.68rem; font-weight:600; padding:0.1rem 0.5rem; border-radius:6px; }
+
+      .mini-bar-track{ height:5px; border-radius:10px; background:#fecaca; margin-top:0.4rem; overflow:hidden; }
+      .mini-bar-fill{ height:100%; border-radius:10px; background:#dc2626; }
+      .mini-bar-track.ok{ background:#eef2f6; }
+      .mini-bar-fill.ok{ background:var(--teal); }
+
+      .cat-row-inv{ padding:0.6rem 0; border-bottom:1px solid var(--border); }
+      .cat-row-inv:last-child{ border-bottom:none; }
+
+      .mov-item{ display:flex; align-items:flex-start; gap:0.75rem; padding:0.85rem 0; border-bottom:1px solid var(--border); }
+      .mov-item:last-child{ border-bottom:none; }
+      .mov-icon{ width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+
+      .stock-badge{ font-size:0.8rem; font-weight:700; }
+      .stock-critico{ color:#dc2626; }
+      .stock-bajo{ color:#d97706; }
+      .stock-ok{ color:#16a34a; }
+
+      .oc-item{ display:flex; align-items:center; gap:0.75rem; padding:0.85rem 0; border-bottom:1px solid var(--border); }
+      .oc-item:last-child{ border-bottom:none; }
+      .oc-icon{ width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+      .status-pendiente-oc{ background:#fef3c7; color:#d97706; }
+      .status-aprobada-oc{ background:#dcfce7; color:#16a34a; }
+      .status-recibida-oc{ background:#dcfce7; color:#16a34a; }
+      .status-cancelada-oc{ background:#e5e7eb; color:#64748b; }
+
+      .tipo-mov-btn{ flex:1; border:2px solid var(--border); border-radius:10px; padding:0.7rem; text-align:center; cursor:pointer; font-weight:600; font-size:0.85rem; color:#475569; }
+      .tipo-mov-btn.entrada.selected{ background:var(--teal); border-color:var(--teal); color:#fff; }
+      .tipo-mov-btn.salida.selected{ background:#dc2626; border-color:#dc2626; color:#fff; }
+      .tipo-mov-btn.ajuste.selected{ background:#d97706; border-color:#d97706; color:#fff; }
+
+      .oc-linea-row{ display:grid; grid-template-columns: 2fr 1fr 1fr auto; gap:0.5rem; align-items:center; margin-bottom:0.5rem; }
+</style>
+</head>
+
+<body>
+
+<!--
+  ==========================================================
+  MÓDULO INVENTARIO — DATOS MOCK + FLUJO EN MEMORIA
+  4 pestañas: Resumen, Productos, Movimientos, Órdenes de Compra.
+  Mismo patrón que los otros módulos. Busca los comentarios [BACKEND].
+  ==========================================================
+-->
+
+<dental-sidebar></dental-sidebar>
+
+<div class="main-content">
+
+  <div class="top-header">
+    <h4>Inventario</h4>
+    <div class="d-flex align-items-center gap-3">
+      <dental-notificaciones></dental-notificaciones>
+      <div class="d-flex align-items-center gap-2">
+        <span class="text-muted small" id="adminNombre">Cargando...</span>
+        <div class="avatar-sm" id="adminAvatarInicial">–</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+      <h5 class="fw-bold mb-0">Inventario de Insumos</h5>
+      <div class="section-sub text-muted small">Control de materiales y suministros dentales</div>
+    </div>
+    <div id="accionesTopInv"></div>
+  </div>
+
+  <div class="btn-group tabs-inv mb-3" role="group">
+    <button class="btn btn-teal" id="tabResumenInv"><i class="bi bi-grid"></i> Resumen</button>
+    <button class="btn btn-outline-soft" id="tabProductos"><i class="bi bi-file-earmark-text"></i> Productos</button>
+    <button class="btn btn-outline-soft" id="tabMovimientos"><i class="bi bi-arrow-left-right"></i> Movimientos</button>
+    <button class="btn btn-outline-soft" id="tabOrdenes"><i class="bi bi-file-earmark-bar-graph"></i> Órdenes de Compra</button>
+  </div>
+
+  <!-- ===================== TAB: RESUMEN ===================== -->
+  <!-- [BACKEND] GET /inventario/resumen -->
+  <div id="vistaResumenInv">
+    <div class="row g-3 mb-3">
+      <div class="col-6 col-lg-3"><div class="kpi-inv"><div class="icon-round" style="background:var(--teal-light); color:var(--teal-dark)"><i class="bi bi-clipboard-data"></i></div><div><div class="val" id="kpiTotalProductos">--</div><div class="lbl">Total Productos</div></div></div></div>
+      <div class="col-6 col-lg-3"><div class="kpi-inv"><div class="icon-round" style="background:#fee2e2; color:#dc2626"><i class="bi bi-exclamation-circle"></i></div><div><div class="val" style="color:#dc2626" id="kpiStockCritico">--</div><div class="lbl">Stock Crítico</div></div></div></div>
+      <div class="col-6 col-lg-3"><div class="kpi-inv"><div class="icon-round" style="background:#fef3c7; color:#d97706"><i class="bi bi-currency-dollar"></i></div><div><div class="val" id="kpiValorInventario">--</div><div class="lbl">Valor en Inventario</div></div></div></div>
+      <div class="col-6 col-lg-3"><div class="kpi-inv"><div class="icon-round" style="background:#fed7aa; color:#c2410c"><i class="bi bi-hourglass-split"></i></div><div><div class="val" id="kpiPorVencer">--</div><div class="lbl">Por Vencer (60 días)</div></div></div></div>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-lg-6">
+        <div class="card-custom">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="section-title mb-0"><i class="bi bi-exclamation-triangle-fill text-danger"></i> Alertas de Stock</div>
+            <span class="alert-badge-count" id="alertasCount">0 alertas</span>
+          </div>
+          <div id="alertasStockContainer"></div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="card-custom">
+          <div class="section-title mb-2"><i class="bi bi-list-ul"></i> Stock por Categoría</div>
+          <div id="stockCategoriaContainer"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-custom">
+      <div class="section-title mb-2"><i class="bi bi-arrow-repeat"></i> Últimos Movimientos</div>
+      <div id="ultimosMovimientosContainer"></div>
+    </div>
+  </div>
+
+  <!-- ===================== TAB: PRODUCTOS ===================== -->
+  <!-- [BACKEND] GET /inventario/productos?buscar=&categoria=&stock= -->
+  <div id="vistaProductos" class="d-none">
+    <div class="d-flex flex-wrap gap-2 mb-3">
+      <div class="flex-grow-1" style="min-width:220px;">
+        <div class="input-group">
+          <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+          <input type="text" class="form-control border-start-0" id="filtroProdBusqueda" placeholder="Buscar producto, código, marca...">
+        </div>
+      </div>
+      <select class="form-select" id="filtroProdCategoria" style="max-width:200px;">
+        <option value="">Todas las categorías</option>
+        <option value="Restauracion">Restauración</option>
+        <option value="Anestesia">Anestesia</option>
+        <option value="Ortodoncia">Ortodoncia</option>
+        <option value="Descartables">Descartables</option>
+        <option value="Esterilizacion">Esterilización</option>
+        <option value="Instrumentos">Instrumentos</option>
+      </select>
+      <select class="form-select" id="filtroProdStock" style="max-width:180px;">
+        <option value="">Todo el stock</option>
+        <option value="critico">Stock crítico</option>
+        <option value="ok">Stock normal</option>
+      </select>
+    </div>
+
+    <div class="card-custom">
+      <div class="table-responsive">
+        <table class="table patients-table mb-0">
+          <thead>
+            <tr><th>Producto</th><th>Categoría</th><th>Stock</th><th>Precio</th><th>Ubicación</th><th>Acciones</th></tr>
+          </thead>
+          <tbody id="tbodyProductos"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== TAB: MOVIMIENTOS ===================== -->
+  <!-- [BACKEND] GET /inventario/movimientos?buscar=&tipo= -->
+  <div id="vistaMovimientos" class="d-none">
+    <div class="row g-3 mb-3">
+      <div class="col-md-4"><div class="kpi-inv"><div class="icon-round" style="background:var(--teal-light); color:var(--teal-dark)"><i class="bi bi-arrow-up-circle"></i></div><div><div class="val" id="kpiEntradas">--</div><div class="lbl">Entradas</div></div></div></div>
+      <div class="col-md-4"><div class="kpi-inv"><div class="icon-round" style="background:#fee2e2; color:#dc2626"><i class="bi bi-arrow-down-circle"></i></div><div><div class="val" id="kpiSalidas">--</div><div class="lbl">Salidas</div></div></div></div>
+      <div class="col-md-4"><div class="kpi-inv"><div class="icon-round" style="background:#fef3c7; color:#d97706"><i class="bi bi-sliders"></i></div><div><div class="val" id="kpiAjustes">--</div><div class="lbl">Ajustes</div></div></div></div>
+    </div>
+
+    <div class="card-custom">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+        <h6 class="fw-bold mb-0"><i class="bi bi-clock-history"></i> Historial de Movimientos</h6>
+        <div class="d-flex gap-2">
+          <!-- [BACKEND] Abre modal Registrar Movimiento (aquí sin producto preseleccionado) -->
+          <button class="btn btn-teal btn-sm" id="btnRegistrarMovGeneral"><i class="bi bi-plus-lg"></i> Registrar</button>
+          <input type="text" class="form-control form-control-sm" id="filtroMovBusqueda" placeholder="Buscar..." style="width:180px;">
+          <select class="form-select form-select-sm" id="filtroMovTipo" style="width:130px;">
+            <option value="">Todos</option>
+            <option value="entrada">Entrada</option>
+            <option value="salida">Salida</option>
+            <option value="ajuste">Ajuste</option>
+          </select>
+        </div>
+      </div>
+      <div id="movimientosContainer"></div>
+    </div>
+  </div>
+
+  <!-- ===================== TAB: ÓRDENES DE COMPRA ===================== -->
+  <!-- [BACKEND] GET /inventario/ordenes -->
+  <div id="vistaOrdenes" class="d-none">
+    <div class="row g-3 mb-3">
+      <div class="col-6 col-lg-3"><div class="kpi-inv"><div class="icon-round" style="background:#fef3c7; color:#d97706"><i class="bi bi-clock"></i></div><div><div class="val" id="kpiOcPendiente">--</div><div class="lbl">Pendiente</div></div></div></div>
+      <div class="col-6 col-lg-3"><div class="kpi-inv"><div class="icon-round" style="background:#dcfce7; color:#16a34a"><i class="bi bi-check-circle"></i></div><div><div class="val" id="kpiOcAprobada">--</div><div class="lbl">Aprobada</div></div></div></div>
+      <div class="col-6 col-lg-3"><div class="kpi-inv"><div class="icon-round" style="background:#dcfce7; color:#16a34a"><i class="bi bi-box-seam"></i></div><div><div class="val" id="kpiOcRecibida">--</div><div class="lbl">Recibida</div></div></div></div>
+      <div class="col-6 col-lg-3"><div class="kpi-inv"><div class="icon-round" style="background:#e5e7eb; color:#64748b"><i class="bi bi-x-circle"></i></div><div><div class="val" id="kpiOcCancelada">--</div><div class="lbl">Cancelada</div></div></div></div>
+    </div>
+
+    <div class="alert d-flex align-items-center gap-2 mb-3" style="background:#fef3c7; border:none;" id="alertaOcPorRecibir"></div>
+
+    <div class="card-custom">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="fw-bold mb-0"><i class="bi bi-file-earmark-bar-graph"></i> Órdenes de Compra</h6>
+        <select class="form-select form-select-sm" id="filtroOcEstado" style="width:180px;">
+          <option value="">Todos los estados</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="aprobada">Aprobada</option>
+          <option value="recibida">Recibida</option>
+          <option value="cancelada">Cancelada</option>
+        </select>
+      </div>
+      <div id="ordenesContainer"></div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ============================================================ -->
+<!-- MODAL: NUEVO / EDITAR PRODUCTO (se reutiliza para ambas acciones) -->
+<!-- [BACKEND] Nuevo -> POST /inventario/productos | Editar -> PUT /inventario/productos/:id -->
+<!-- ============================================================ -->
+<div class="modal fade" id="modalProducto" tabindex="-1">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold mb-0" id="modalProductoTitulo">Nuevo Producto</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formProducto">
+          <input type="hidden" name="productoId">
+          <div class="mb-3">
+            <div class="form-label small fw-semibold">Nombre del Producto *</div>
+            <input type="text" class="form-control" name="nombre" required>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <div class="form-label small fw-semibold">Código *</div>
+              <input type="text" class="form-control" name="codigo" placeholder="Ej: RES-011" required>
+            </div>
+            <div class="col-md-6">
+              <div class="form-label small fw-semibold">Categoría *</div>
+              <select class="form-select" name="categoria" required>
+                <option value="">Seleccionar categoría</option>
+                <option value="Restauracion">Restauración</option>
+                <option value="Anestesia">Anestesia</option>
+                <option value="Ortodoncia">Ortodoncia</option>
+                <option value="Descartables">Descartables</option>
+                <option value="Esterilizacion">Esterilización</option>
+                <option value="Instrumentos">Instrumentos</option>
+              </select>
+            </div>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <div class="form-label small fw-semibold">Marca</div>
+              <input type="text" class="form-control" name="marca">
+            </div>
+            <div class="col-md-6">
+              <div class="form-label small fw-semibold">Unidad de Medida</div>
+              <input type="text" class="form-control" name="unidad" placeholder="Ej: Caja x50, Jeringa 4g">
+            </div>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <div class="form-label small fw-semibold">Stock Actual *</div>
+              <input type="number" class="form-control" name="stock" id="inputStockActual" min="0" required>
+              <div class="text-muted small mt-1" id="stockActualHint"></div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-label small fw-semibold">Stock Mínimo *</div>
+              <input type="number" class="form-control" name="stockMinimo" min="0" required>
+            </div>
+            <div class="col-md-4">
+              <div class="form-label small fw-semibold">Stock Máximo</div>
+              <input type="number" class="form-control" name="stockMaximo" min="0">
+            </div>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <div class="form-label small fw-semibold">Precio Unitario ($) *</div>
+              <input type="number" class="form-control" name="precio" min="0" step="0.01" required>
+            </div>
+            <div class="col-md-6">
+              <div class="form-label small fw-semibold">Fecha de Vencimiento</div>
+              <input type="date" class="form-control" name="vencimiento">
+            </div>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <div class="form-label small fw-semibold">Proveedor</div>
+              <input type="text" class="form-control" name="proveedor">
+            </div>
+            <div class="col-md-6">
+              <div class="form-label small fw-semibold">Ubicación</div>
+              <input type="text" class="form-control" name="ubicacion" placeholder="Ej: Estante A-1">
+            </div>
+          </div>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" name="activo" id="productoActivoCheck" checked>
+            <div class="form-check-label small" for="productoActivoCheck">Producto activo</div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-soft" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="formProducto" class="btn btn-teal" id="btnGuardarProducto">Guardar Producto</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- MODAL: REGISTRAR MOVIMIENTO -->
+<!-- [BACKEND] POST /inventario/movimientos -->
+<!-- ============================================================ -->
+<div class="modal fade" id="modalMovimiento" tabindex="-1">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold mb-0">Registrar Movimiento</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="card-custom mb-3" style="background:var(--bg);" id="movProductoInfo">
+          <div class="text-muted small">Producto</div>
+          <div class="fw-bold" id="movProductoNombre">—</div>
+          <div class="text-muted small" id="movProductoStock">Stock actual: --</div>
+          <select class="form-select form-select-sm mt-2 d-none" id="movSelectProducto">
+            <option value="">Seleccionar producto...</option>
+          </select>
+        </div>
+
+        <form id="formMovimiento">
+          <input type="hidden" name="productoId">
+          <div class="form-label small fw-semibold d-block">Tipo de Movimiento</div>
+          <div class="d-flex gap-2 mb-3">
+            <div class="tipo-mov-btn entrada selected" data-tipo="Entrada"><i class="bi bi-arrow-up"></i> Entrada</div>
+            <div class="tipo-mov-btn salida" data-tipo="Salida"><i class="bi bi-arrow-down"></i> Salida</div>
+            <div class="tipo-mov-btn ajuste" data-tipo="Ajuste"><i class="bi bi-sliders"></i> Ajuste</div>
+          </div>
+          <input type="hidden" name="tipoMovimiento" value="Entrada">
+
+          <div class="mb-3">
+            <div class="form-label small fw-semibold" id="labelCampoCantidad">Cantidad *</div>
+            <input type="number" class="form-control" name="cantidad" id="inputCantidadMov" min="1" value="1" required>
+            <div class="text-muted small mt-1" id="hintCampoCantidad"></div>
+          </div>
+          <div class="mb-1">
+            <div class="form-label small fw-semibold">Motivo</div>
+            <input type="text" class="form-control" name="motivo" placeholder="Ej: Compra, Uso en consulta...">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-soft" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="formMovimiento" class="btn btn-teal">Registrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- MODAL: NUEVA ORDEN DE COMPRA -->
+<!-- [BACKEND] POST /inventario/ordenes -->
+<!-- ============================================================ -->
+<div class="modal fade" id="modalOrden" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold mb-0">Nueva Orden de Compra</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formOrden">
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <div class="form-label small fw-semibold">Proveedor *</div>
+              <input type="text" class="form-control" name="proveedor" placeholder="Ej: Dental Supply Co." required>
+            </div>
+            <div class="col-md-6">
+              <div class="form-label small fw-semibold">Fecha de Entrega Estimada</div>
+              <input type="date" class="form-control" name="fechaEntrega">
+            </div>
+          </div>
+
+          <div class="form-label small fw-semibold d-block">Productos *</div>
+          <!-- [BACKEND] Cada producto de este selector viene de GET /inventario/productos -->
+          <div id="lineasOrdenContainer"></div>
+          <button type="button" class="btn btn-outline-soft btn-sm mt-1" id="btnAgregarLineaOrden"><i class="bi bi-plus-lg"></i> Agregar producto</button>
+
+          <div class="text-end fw-bold mt-3" id="totalOrdenTexto">Total: $0.00</div>
+
+          <div class="mt-3">
+            <div class="form-label small fw-semibold">Notas</div>
+            <textarea class="form-control" name="notas" rows="2" placeholder="Notas adicionales sobre la orden..."></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-soft" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="formOrden" class="btn btn-teal">Crear Orden</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="modalConfirmarAccionOrden" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold mb-0" id="confirmarAccionTitulo">Confirmar</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-0" id="confirmarAccionMensaje">--</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-soft" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-teal" id="btnConfirmarAccionOrden">Confirmar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../scripts/components/admin-sidebar.js"></script>
+<script src="../scripts/components/admin-sesion.js"></script>
+<script src="../scripts/components/admin-notificaciones.js"></script>
+<script src="../scripts/components/admin-inventario.js"></script>
+
+</body>
+</html>

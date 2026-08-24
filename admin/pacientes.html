@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <title>DentalCare - Gestión de Pacientes</title>
+    <script src="../scripts/components/admin-head-loader.js"></script>
+    <style>
+      /* Estilos para la pestaña Odontograma (solo lectura) dentro del
+         modal de detalle del paciente -- copiados del módulo Odontograma
+         real, para que se vea idéntico. */
+      .tooth-grid-row{ display:flex; gap:6px; justify-content:space-between; }
+      .tooth-col{ display:flex; flex-direction:column; align-items:center; gap:2px; }
+      .tooth-num{ font-size:0.65rem; color:var(--text-muted); }
+      .tooth-box-o{
+        width:38px; height:38px; border-radius:7px; border:1px solid var(--border);
+        display:flex; align-items:center; justify-content:center; font-size:0.65rem; font-weight:700;
+        background:#fff; color:#94a3b8;
+      }
+      .odo-stat-box{ border-radius:12px; padding:0.9rem; text-align:center; }
+      .odo-stat-box .n{ font-size:1.4rem; font-weight:700; }
+      .odo-stat-box .l{ font-size:0.78rem; }
+      .odo-badge{ font-size:0.72rem; font-weight:600; padding:0.2rem 0.6rem; border-radius:20px; }
+    </style>
+</head>
+<body>
+
+<!-- MÓDULO PACIENTES — conectado al backend real vía admin-pacientes.js -->
+
+<!-- SIDEBAR -->
+<dental-sidebar></dental-sidebar>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+
+  <div class="top-header">
+    <h4>Gestión de Pacientes</h4>
+    <div class="d-flex align-items-center gap-3">
+      <dental-notificaciones></dental-notificaciones>
+      <div class="d-flex align-items-center gap-2">
+        <span class="text-muted small" id="adminNombre">Cargando...</span>
+        <div class="avatar-sm" id="adminAvatarInicial">–</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+      <h5 class="fw-bold mb-0">Pacientes</h5>
+      <div class="section-sub text-muted small">Administra la información y el historial de tus pacientes</div>
+    </div>
+    <!-- [BACKEND] Abre modal Nuevo Paciente -> al guardar: POST /pacientes -->
+    <button class="btn btn-teal" data-bs-toggle="modal" data-bs-target="#modalNuevoPaciente">
+      <i class="bi bi-person-plus"></i> Nuevo Paciente
+    </button>
+  </div>
+
+  <!-- Filtros -->
+  <!-- [BACKEND] GET /pacientes?buscar=&estado=&orden= -->
+  <div class="card-custom mb-3">
+    <div class="row g-2 align-items-center">
+      <div class="col-md-6">
+        <div class="input-group">
+          <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+          <input type="text" class="form-control border-start-0" id="inputBuscar" placeholder="Buscar por nombre, email, teléfono o ID..." autocomplete="off" aria-label="Buscar pacientes">
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="d-flex align-items-center gap-2">
+          <span class="text-muted small">Estado:</span>
+          <select class="form-select form-select-sm" id="selectEstado" autocomplete="off" aria-label="Filtrar por estado">
+            <option value="">Todos</option>
+            <option value="activo">Activo</option>
+            <option value="inactivo">Inactivo</option>
+          </select>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="d-flex align-items-center gap-2">
+          <span class="text-muted small">Ordenar:</span>
+          <select class="form-select form-select-sm" id="selectOrden" autocomplete="off" aria-label="Ordenar por">
+            <option value="nombre">Nombre</option>
+            <option value="ultima_visita">Última Visita</option>
+            <option value="proxima_cita">Próxima Cita</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <!-- [BACKEND] GET /pacientes/resumen -> {total, activos, con_citas_proximas, con_saldo}
+       Por ahora "Total" y "Activos" se calculan localmente contando el array mock.
+       "Con Citas Próximas" y "Con Saldo Pendiente" se quedan en "--" porque el formulario
+       de prueba no captura esos datos (no hay módulo de Citas ni Finanzas conectado aún). -->
+  <div class="row g-3 mb-3">
+    <div class="col-6 col-lg-3">
+      <div class="card-custom kpi-teal">
+        <div class="kpi-div">Total Pacientes</div>
+        <div class="kpi-value" id="kpiTotal">–</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card-custom kpi-teal">
+        <div class="kpi-div">Activos</div>
+        <div class="kpi-value" id="kpiActivos">–</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card-custom kpi-teal">
+        <div class="kpi-div">Con Citas Próximas</div>
+        <div class="kpi-value" id="kpiConCitas">–</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card-custom kpi-orange">
+        <div class="kpi-div orange">Con Saldo Pendiente</div>
+        <div class="kpi-value orange" id="kpiConSaldo">–</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="card-custom">
+    <div class="table-responsive">
+      <table class="table patients-table mb-0">
+        <thead>
+          <tr>
+            <th>Paciente</th>
+            <th>Contacto</th>
+            <th>Edad</th>
+            <th>Última Visita</th>
+            <th>Próxima Cita</th>
+            <th>Visitas</th>
+            <th>Saldo</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <!-- [BACKEND] Este tbody se llena con GET /pacientes. Por ahora lo llena renderTabla() con el array mock -->
+        <tbody id="tbodyPacientes"></tbody>
+      </table>
+      <div class="empty-state" id="emptyStatePacientes">
+        <i class="bi bi-people"></i>
+        <div>Aquí se listarán los pacientes registrados</div>
+        <div class="small-note">Fuente: tabla "pacientes" (GET /pacientes)</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ============================================================ -->
+<!-- MODAL: NUEVO PACIENTE -->
+<!-- [BACKEND] Al enviar -> POST /pacientes con el body del formulario -->
+<!-- Por ahora el submit lo captura guardarNuevoPaciente() y lo mete al array mock -->
+<!-- ============================================================ -->
+<div class="modal fade" id="modalNuevoPaciente" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title fw-bold mb-0">Nuevo Paciente</h5>
+          <div class="text-muted small">Registra un nuevo paciente en el sistema</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formNuevoPaciente">
+          <h6 class="fw-bold mb-3"><i class="bi bi-person" style="color:var(--teal)"></i> Información Personal</h6>
+          <div class="row g-3 mb-3">
+            <div class="col-md-12">
+              <label class="form-label small fw-semibold" for="np-nombre">Nombre Completo *</label>
+              <input type="text" class="form-control" id="np-nombre" name="nombre" placeholder="Ej: María González" required autocomplete="name">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold" for="np-fechaNacimiento">Fecha de Nacimiento *</label>
+              <input type="date" class="form-control" id="np-fechaNacimiento" name="fechaNacimiento" required autocomplete="off">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold" for="np-genero">Género *</label>
+              <select class="form-select" id="np-genero" name="genero" required autocomplete="off">
+                <option value="">Seleccionar</option>
+                <option>Femenino</option>
+                <option>Masculino</option>
+                <option>Otro</option>
+              </select>
+            </div>
+          </div>
+
+          <h6 class="fw-bold mb-3 mt-4"><i class="bi bi-person-lines-fill" style="color:var(--teal)"></i> Información de Contacto</h6>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold" for="email">Email *</label>
+              <input type="email" class="form-control" name="email" id="email" placeholder="ejemplo@email.com" required autocomplete="email">
+              </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold" for="np-telefono">Teléfono *</label>
+              <input type="text" class="form-control" id="np-telefono" name="telefono" placeholder="555-1234" required autocomplete="tel">
+            </div>
+            <div class="col-md-12">
+              <label class="form-label small fw-semibold" for="np-direccion">Dirección</label>
+              <input type="text" class="form-control" id="np-direccion" name="direccion" placeholder="Calle, número, ciudad" autocomplete="street-address">
+            </div>
+          </div>
+
+          <h6 class="fw-bold mb-3 mt-4"><i class="bi bi-heart-pulse" style="color:var(--teal)"></i> Información Médica</h6>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold" for="np-tipoSangre">Tipo de Sangre</label>
+              <select class="form-select" id="np-tipoSangre" name="tipoSangre" autocomplete="off">
+                <option value="">Seleccionar</option>
+                <option>O+</option><option>O-</option>
+                <option>A+</option><option>A-</option>
+                <option>B+</option><option>B-</option>
+                <option>AB+</option><option>AB-</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold" for="np-alergias">Alergias</label>
+              <input type="text" class="form-control" id="np-alergias" name="alergias" placeholder="Ej: Penicilina, Látex" autocomplete="off">
+            </div>
+            <div class="col-md-12">
+              <label class="form-label small fw-semibold" for="np-contactoEmergencia">Contacto de Emergencia</label>
+              <input type="text" class="form-control" id="np-contactoEmergencia" name="contactoEmergencia" placeholder="Nombre - Teléfono" autocomplete="off">
+            </div>
+          </div>
+
+          <div class="form-check mt-4 p-3 rounded-3" style="background:var(--teal-light);" id="bloqueAccesoPortal">
+            <input class="form-check-input" type="checkbox" id="darAccesoPortal" name="darAccesoPortal">
+            <div class="form-check-div small fw-semibold" for="darAccesoPortal">
+              Dar acceso al portal del paciente
+            </div>
+            <div class="text-muted small mt-1 mb-2">
+              Si lo dejas sin marcar, el paciente queda registrado solo como expediente
+              clínico (sin poder entrar al portal por ahora).
+            </div>
+
+            <div id="camposContrasenaPortal" class="d-none row g-2 mt-1">
+              <div class="col-md-6">
+                <label class="form-label small" for="np-contrasenaPortal">Contraseña</label>
+                <input type="password" class="form-control form-control-sm" id="np-contrasenaPortal" name="contrasenaPortal" minlength="6" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small" for="confirmarContrasenaPortal">Confirmar contraseña</label>
+                <input type="password" class="form-control form-control-sm" id="confirmarContrasenaPortal" minlength="6" placeholder="Repite la contraseña" autocomplete="new-password">
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-soft" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="formNuevoPaciente" class="btn btn-teal">Registrar Paciente</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- MODAL: EDITAR PACIENTE -->
+<!-- [BACKEND] Al abrir -> GET /pacientes/:id para precargar el formulario -->
+<!-- [BACKEND] Al enviar -> PUT /pacientes/:id -->
+<!-- Por ahora abrirPaciente() precarga los campos y guardarEdicionPaciente() actualiza el array mock -->
+<!-- ============================================================ -->
+<div class="modal fade" id="modalEditarPaciente" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title fw-bold mb-0">Editar Paciente</h5>
+          <div class="text-muted small">Actualiza la información del paciente</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formEditarPaciente">
+          <input type="hidden" name="pacienteId">
+          <h6 class="fw-bold mb-3"><i class="bi bi-person" style="color:var(--teal)"></i> Información Personal</h6>
+          <div class="row g-3 mb-3">
+            <div class="col-md-12">
+              <label class="form-label small fw-semibold" for="ep-nombre">Nombre Completo *</label>
+              <input type="text" class="form-control" id="ep-nombre" name="nombre" required autocomplete="name">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold" for="ep-fechaNacimiento">Fecha de Nacimiento *</label>
+              <input type="date" class="form-control" id="ep-fechaNacimiento" name="fechaNacimiento" required autocomplete="off">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold" for="ep-genero">Género *</label>
+              <select class="form-select" id="ep-genero" name="genero" autocomplete="off" required>
+                <option value="">Seleccionar</option>
+                <option>Femenino</option>
+                <option>Masculino</option>
+                <option>Otro</option>
+              </select>
+            </div>
+
+          </div>
+
+          <h6 class="fw-bold mb-3 mt-4"><i class="bi bi-person-lines-fill" style="color:var(--teal)"></i> Información de Contacto</h6>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold" for="ep-email">Email *</label>
+              <input type="email" class="form-control" id="ep-email" name="email" required autocomplete="email">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold" for="ep-telefono">Teléfono *</label>
+              <input type="text" class="form-control" id="ep-telefono" name="telefono" required autocomplete="tel">
+            </div>
+            <div class="col-md-12">
+              <label class="form-label small fw-semibold" for="ep-direccion">Dirección</label>
+              <input type="text" class="form-control" id="ep-direccion" name="direccion" autocomplete="street-address">
+            </div>
+          </div>
+
+          <h6 class="fw-bold mb-3 mt-4"><i class="bi bi-heart-pulse" style="color:var(--teal)"></i> Información Médica</h6>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold" for="ep-tipoSangre">Tipo de Sangre</label>
+              <select class="form-select" id="ep-tipoSangre" name="tipoSangre" autocomplete="off">
+                <option value="">Seleccionar</option>
+                <option>O+</option><option>O-</option>
+                <option>A+</option><option>A-</option>
+                <option>B+</option><option>B-</option>
+                <option>AB+</option><option>AB-</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold" for="ep-alergias">Alergias</label>
+              <input type="text" class="form-control" id="ep-alergias" name="alergias" autocomplete="off">
+            </div>
+            <div class="col-md-12">
+              <label class="form-label small fw-semibold" for="ep-contactoEmergencia">Contacto de Emergencia</label>
+              <input type="text" class="form-control" id="ep-contactoEmergencia" name="contactoEmergencia" autocomplete="off">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-soft" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="formEditarPaciente" class="btn btn-teal">Guardar Cambios</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- MODAL: DETALLE PACIENTE (6 pestañas) -->
+<!-- [BACKEND] Al abrir -> GET /pacientes/:id (para header + tab "Información General") -->
+<!-- Cada pestaña carga su propio endpoint, idealmente de forma diferida (lazy) al hacer clic -->
+<!-- Por ahora abrirPaciente() rellena solo el header y la pestaña "Información General" -->
+<!-- ============================================================ -->
+<div class="modal fade" id="modalDetallePaciente" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <div class="d-flex align-items-center gap-3 flex-grow-1">
+          <div class="patient-header-avatar" id="detAvatar">--</div>
+          <div>
+            <h5 class="fw-bold mb-0" id="detNombre">Nombre del Paciente</h5>
+            <div class="d-flex align-items-center gap-2">
+              <span class="text-muted small" id="detId">P-000</span>
+              <span class="status-badge status-activo" id="detEstadoBadge">Activo</span>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-teal btn-sm me-2" id="btnEditarDesdeDetalle" data-bs-toggle="modal" data-bs-target="#modalEditarPaciente" data-bs-dismiss="modal">
+          <i class="bi bi-pencil"></i> Editar
+        </button>
+        <button class="btn btn-outline-soft btn-sm me-2 d-none" id="btnOtorgarAcceso" data-bs-toggle="modal" data-bs-target="#modalOtorgarAcceso" data-bs-dismiss="modal">
+          <i class="bi bi-key"></i> Otorgar acceso al portal
+        </button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body pt-2">
+        <ul class="nav nav-tabs-custom border-bottom mb-3" role="tablist">
+          <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabGeneral">Información General</button></li>
+          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabHistorial">Historial Médico</button></li>   
+          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabFacturacion">Facturación</button></li>
+          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabOdontograma"><i class="bi bi-emoji-smile"></i> Odontograma</button></li>
+        </ul>
+        <div class="tab-content">
+
+          <!-- TAB: Información General -->
+          <div class="tab-pane fade show active" id="tabGeneral">
+            <div class="row g-3 mb-3">
+              <div class="col-6 col-lg-3">
+                <div class="card-custom kpi-teal"><div class="kpi-div">Total Visitas</div><div class="kpi-value" id="detTotalVisitas">--</div></div>
+              </div>
+              <div class="col-6 col-lg-3">
+                <div class="card-custom kpi-teal"><div class="kpi-div">Última Visita</div><div class="kpi-value" style="font-size:1.1rem;" id="detUltimaVisitaKpi">--</div></div>
+              </div>
+              <div class="col-6 col-lg-3">
+                <div class="card-custom kpi-teal"><div class="kpi-div">Próxima Cita</div><div class="kpi-value" style="font-size:1.1rem;" id="detProximaCitaKpi">--</div></div>
+              </div>
+              <div class="col-6 col-lg-3">
+                <div class="card-custom kpi-orange"><div class="kpi-div orange">Saldo Pendiente</div><div class="kpi-value orange" id="detSaldoPendiente">--</div></div>
+              </div>
+            </div>
+
+            <div class="card-custom mb-3">
+              <h6 class="fw-bold mb-3"><i class="bi bi-person" style="color:var(--teal)"></i> Información Personal</h6>
+              <div class="row g-3">
+                <div class="col-md-6"><div class="text-muted small">Edad</div><div class="fw-semibold" id="detEdad">--</div></div>
+                <div class="col-md-6"><div class="text-muted small">Fecha de Nacimiento</div><div class="fw-semibold" id="detFechaNac">--</div></div>
+                <div class="col-md-6"><div class="text-muted small">Género</div><div class="fw-semibold" id="detGenero">--</div></div>
+                <div class="col-md-6"><div class="text-muted small">Tipo de Sangre</div><div class="fw-semibold" id="detSangre">--</div></div>
+                <div class="col-md-12"><div class="text-muted small">Dirección</div><div class="fw-semibold" id="detDireccion">--</div></div>
+              </div>
+            </div>
+
+            <div class="card-custom mb-3">
+              <h6 class="fw-bold mb-3"><i class="bi bi-person-lines-fill" style="color:var(--teal)"></i> Información de Contacto</h6>
+              <div class="row g-3">
+                <div class="col-md-6"><div class="text-muted small">Email</div><div class="fw-semibold" id="detEmail">--</div></div>
+                <div class="col-md-6"><div class="text-muted small">Teléfono</div><div class="fw-semibold" id="detTelefono">--</div></div>
+                <div class="col-md-12"><div class="text-muted small">Contacto de Emergencia</div><div class="fw-semibold" id="detContactoEmergencia">--</div></div>
+              </div>
+            </div>
+
+            <div class="card-custom">
+              <h6 class="fw-bold mb-3"><i class="bi bi-heart-pulse" style="color:var(--teal)"></i> Información Médica</h6>
+              <div class="text-muted small">Alergias</div>
+              <div class="fw-semibold" id="detAlergias">--</div>
+            </div>
+          </div>
+
+          <!-- TAB: Historial Médico -->
+          <div class="tab-pane fade" id="tabHistorial">
+            <h6 class="fw-bold mb-3">Historial de Tratamientos</h6>
+            <div class="table-responsive">
+              <table class="table patients-table mb-0">
+                <thead>
+                  <tr><th>Fecha</th><th>Tratamiento</th><th>Categoría</th><th>Dentista</th><th>Sesiones</th><th>Estado</th><th>Costo</th><th>Pendiente</th></tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+              <div class="empty-state">
+                <i class="bi bi-journal-medical"></i>
+                <div>Este paciente todavía no tiene tratamientos registrados</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB: Facturación -->
+          <div class="tab-pane fade" id="tabFacturacion">
+            <div class="row g-2 mb-3">
+              <div class="col-4">
+                <div class="card-custom bill-kpi green" style="background:#dcfce7; border:none;">
+                  <div class="text-muted small">Total Pagado</div>
+                  <div class="val fw-bold fs-5" style="color:#16a34a;">$0.00</div>
+                </div>
+              </div>
+              <div class="col-4">
+                <div class="card-custom bill-kpi orange" style="background:#fff7ed; border:none;">
+                  <div class="text-muted small">Saldo Pendiente</div>
+                  <div class="val fw-bold fs-5" style="color:#d97706;">$0.00</div>
+                </div>
+              </div>
+              <div class="col-4">
+                <div class="card-custom bill-kpi teal" style="background:var(--teal-light); border:none;">
+                  <div class="text-muted small">Total Facturado</div>
+                  <div class="val fw-bold fs-5" style="color:var(--teal-dark);">$0.00</div>
+                </div>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="table patients-table mb-0">
+                <thead><tr><th>Fecha</th><th>Concepto</th><th>Monto</th><th>Estado</th></tr></thead>
+                <tbody></tbody>
+              </table>
+              <div class="empty-state">
+                <i class="bi bi-receipt"></i>
+                <div>Este paciente no tiene citas registradas todavía</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB: Odontograma -->
+          <div class="tab-pane fade" id="tabOdontograma">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6 class="fw-bold mb-0">Odontograma</h6>
+              <a href="#" id="linkVerOdontogramaCompleto" class="btn btn-sm btn-outline-soft">
+                <i class="bi bi-box-arrow-up-right"></i> Editar en módulo Odontograma
+              </a>
+            </div>
+            <div class="text-muted small mb-2" id="odoDetalleUltimaActualizacion">--</div>
+
+            <div class="overflow-auto">
+              <div style="min-width:640px;">
+                <div class="d-flex justify-content-between text-muted small mb-1">
+                  <span>Sup. Der.</span><span>Sup. Izq.</span>
+                </div>
+                <div class="tooth-grid-row mb-1" id="detFilaSuperior"></div>
+                <div class="text-center my-2"><span class="odo-badge" style="background:var(--teal-light); color:var(--teal-dark);">Línea Media</span></div>
+                <div class="tooth-grid-row mb-1" id="detFilaInferior"></div>
+                <div class="d-flex justify-content-between text-muted small">
+                  <span>Inf. Der.</span><span>Inf. Izq.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-2 mt-3">
+              <div class="col-3"><div class="odo-stat-box" style="background:#fee2e2;"><div class="n" style="color:#dc2626" id="detStatCaries">0</div><div class="l" style="color:#dc2626">Caries</div></div></div>
+              <div class="col-3"><div class="odo-stat-box" style="background:#dcfce7;"><div class="n" style="color:#16a34a" id="detStatObturado">0</div><div class="l" style="color:#16a34a">Obturado</div></div></div>
+              <div class="col-3"><div class="odo-stat-box" style="background:#e5e7eb;"><div class="n" style="color:#475569" id="detStatExtraido">0</div><div class="l" style="color:#475569">Extraído</div></div></div>
+              <div class="col-3"><div class="odo-stat-box" style="background:var(--teal-light);"><div class="n" style="color:var(--teal-dark)" id="detStatImplante">0</div><div class="l" style="color:var(--teal-dark)">Implante</div></div></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- MODAL: OTORGAR ACCESO AL PORTAL                               -->
+<!-- Para pacientes que ya existen sin contraseña (contrasenna     -->
+<!-- NULL). El doctor asigna la contraseña, no se genera sola.     -->
+<!-- ============================================================ -->
+<div class="modal fade" id="modalOtorgarAcceso" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title fw-bold mb-0">Otorgar Acceso al Portal</h5>
+          <div class="text-muted small">Asigna una contraseña para que el paciente pueda iniciar sesión</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formOtorgarAcceso">
+          <input type="hidden" name="pacienteId">
+          <div class="mb-3">
+            <label class="form-label small fw-semibold" for="oa-contrasena">Contraseña *</label>
+            <input type="password" class="form-control" id="oa-contrasena" name="contrasena" minlength="6" required placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-semibold" for="confirmarContrasenaAcceso">Confirmar contraseña *</label>
+            <input type="password" class="form-control" id="confirmarContrasenaAcceso" minlength="6" required placeholder="Repite la contraseña" autocomplete="new-password">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-soft" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="formOtorgarAcceso" class="btn btn-teal">Otorgar Acceso</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../scripts/components/admin-sidebar.js"></script>
+
+<!-- Cada módulo del admin vive en su propio archivo -->
+<script src="../scripts/components/admin-sesion.js"></script>
+<script src="../scripts/components/admin-notificaciones.js"></script>
+<script src="../scripts/components/admin-pacientes.js"></script>
+
+</body>
+</html>

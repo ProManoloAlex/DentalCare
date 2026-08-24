@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <title>DentalCare - Gestión de Citas</title>
+    <link rel="stylesheet" href="../styles/portal.css">
+    <script src="../scripts/components/admin-head-loader.js"></script>    <style>
+      /* Estilos propios de este módulo (calendario). El resto viene de portal.css */
+      .view-toggle .btn { 
+        font-size:0.85rem; 
+        transition: all 0.3s ease;
+      }
+      .cal-nav-btn{
+        width:32px; height:32px; border:1px solid var(--border); background:#fff; border-radius:8px;
+        display:flex; align-items:center; justify-content:center; color:#475569;
+        transition: all 0.3s ease;
+      }
+      .cal-nav-btn:hover {
+        background: var(--teal-light);
+        border-color: var(--teal);
+        color: var(--teal-dark);
+      }
+      .cal-legend-dot{ width:9px; height:9px; border-radius:50%; display:inline-block; margin-right:4px; }
+      table.calendar-table{ border-collapse: collapse; width:100%; font-size:0.78rem; }
+      table.calendar-table th, table.calendar-table td{
+        border:1px solid var(--border); padding:0.4rem; vertical-align:top; min-width:110px; height:52px;
+      }
+      table.calendar-table th{ background:#fbfcfd; text-align:center; font-weight:600; color:#475569; }
+      table.calendar-table th.today-col{ color: var(--teal-dark); background: var(--teal-light); }
+
+      /* Días desactivados en Configuración → Clínica → Horarios */
+      table.calendar-table th.dia-cerrado{ background:#f1f5f9; color:#94a3b8; }
+      table.calendar-table th.dia-cerrado .cerrado-tag{
+        font-size:0.62rem; font-weight:600; text-transform:uppercase; letter-spacing:.03em;
+        color:#94a3b8; margin-top:2px;
+      }
+      table.calendar-table td.cal-slot.slot-cerrado{
+        background: repeating-linear-gradient(45deg, #f8fafc, #f8fafc 8px, #f1f5f9 8px, #f1f5f9 16px);
+      }
+      /* Horas fuera del horario configurado para ese día (pero el día sí abre) */
+      table.calendar-table td.cal-slot.slot-fuera-horario{ background:#fbfbfc; }
+      table.calendar-table td.hour-col{ text-align:right; color: var(--text-muted); border:none; font-size:0.75rem; white-space:nowrap; min-width:60px; }
+      .cal-event{
+        border-radius:6px; padding:2px 6px; font-size:0.68rem; color:#fff; cursor:pointer;
+        overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      .cal-event:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      }
+      .list-filters select, .list-filters input{ font-size:0.83rem; }
+      td.cancelada .cal-event, tr.cancelada { opacity:0.55; }
+      .status-confirmada{ background:#dcfce7; color:#16a34a; }
+      .status-pendiente{ background:#fef3c7; color:#d97706; }
+      .status-completada{ background:#dbeafe; color:#2563eb; }
+      .status-cancelada{ background:#fee2e2; color:#dc2626; }
+
+      /* Botón Nueva Cita — mismo padding/radius/sombra que .view-toggle .btn-teal
+         para que los 3 botones (Calendario, Lista, Nueva Cita) se vean como un mismo set */
+      .btn-nueva-cita {
+        background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+        color: #fff !important;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 10px rgba(13, 148, 136, 0.25);
+      }
+      .btn-nueva-cita:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(13, 148, 136, 0.35);
+        background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+        color: #fff !important;
+      }
+      .btn-nueva-cita:active {
+        transform: translateY(0px);
+      }
+      .btn-nueva-cita i {
+        margin-right: 8px;
+      }
+
+      /* Mejora de los botones de vista */
+      .view-toggle .btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+      }
+      .view-toggle .btn-teal {
+        background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+        color: white;
+        border: none;
+        box-shadow: 0 2px 10px rgba(13, 148, 136, 0.25);
+      }
+      .view-toggle .btn-teal:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(13, 148, 136, 0.35);
+      }
+      .view-toggle .btn-outline-soft {
+        background: white;
+        color: #475569;
+        border: 2px solid #e2e8f0;
+      }
+      .view-toggle .btn-outline-soft:hover {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+        transform: translateY(-1px);
+      }
+
+      /* Mejora para el modal */
+      .modal-content {
+        border-radius: 16px;
+        border: none;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+      }
+      .modal-header {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 16px 16px 0 0;
+        border-bottom: 2px solid #e2e8f0;
+      }
+      .modal-footer {
+        background: #f8fafc;
+        border-radius: 0 0 16px 16px;
+        border-top: 2px solid #e2e8f0;
+      }
+</style>
+</head>
+
+<body>
+
+<!--
+  ==========================================================
+  MÓDULO CITAS — DATOS DE EJEMPLO (MOCK) + CRUD FUNCIONAL EN MEMORIA
+  Igual que Tablero/Pacientes: todo vive en la variable "citas" de JS.
+  Cada función tiene su comentario [BACKEND] con el endpoint real
+  que la debe reemplazar cuando conectes la base de datos.
+  ==========================================================
+-->
+
+<!-- SIDEBAR -->
+<dental-sidebar></dental-sidebar>
+
+<div class="main-content">
+
+  <div class="top-header">
+    <h4>Gestión de Citas</h4>
+    <div class="d-flex align-items-center gap-3">
+      <dental-notificaciones></dental-notificaciones>
+      <div class="d-flex align-items-center gap-2">
+        <span class="text-muted small" id="adminNombre">Cargando...</span>
+        <div class="avatar-sm" id="adminAvatarInicial">–</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+      <h5 class="fw-bold mb-0">Agenda de Citas</h5>
+      <div class="section-sub text-muted small">Gestiona y organiza las citas de la clínica</div>
+    </div>
+    <div class="d-flex gap-2">
+      <div class="btn-group view-toggle" role="group">
+        <button class="btn btn-teal" id="btnVistaCalendario"><i class="bi bi-calendar3"></i> Calendario</button>
+        <button class="btn btn-outline-soft" id="btnVistaLista"><i class="bi bi-list-ul"></i> Lista</button>
+      </div>
+      <!-- [BACKEND] Abre modal Nueva Cita -> al guardar: POST /citas -->
+      <button class="btn btn-nueva-cita" data-bs-toggle="modal" data-bs-target="#modalCita" onclick="prepararModalNuevaCita()">
+        <i class="bi bi-plus-lg"></i> Nueva Cita
+      </button>
+    </div>
+  </div>
+
+  <!-- ===================== VISTA CALENDARIO ===================== -->
+  <!-- [BACKEND] GET /citas?desde=&hasta= -> renderCalendario() pinta cada cita en su celda día/hora -->
+  <div class="card-custom" id="vistaCalendario">
+    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+      <div class="d-flex align-items-center gap-2">
+        <span class="fw-bold" id="calMesTexto">--</span>
+        <a href="#" class="link-teal" id="btnHoy">Hoy</a>
+      </div>
+      <div class="d-flex align-items-center gap-2 small">
+        <span class="text-muted">Odontólogos:</span>
+        <span id="leyendaOdontologos"><span class="text-muted small">Cargando...</span></span>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="cal-nav-btn" id="btnSemanaAnterior"><i class="bi bi-chevron-left"></i></button>
+        <button class="cal-nav-btn" id="btnSemanaSiguiente"><i class="bi bi-chevron-right"></i></button>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="calendar-table" id="tablaCalendario"></table>
+    </div>
+  </div>
+
+  <!-- ===================== VISTA LISTA ===================== -->
+  <!-- [BACKEND] GET /citas?buscar=&estado=&odontologo=  -> renderListaCitas() -->
+  <div id="vistaLista" class="d-none">
+    <div class="card-custom mb-3">
+      <div class="row g-2 list-filters">
+        <div class="col-md-5">
+          <div class="input-group">
+            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+            <input type="text" class="form-control border-start-0" id="filtroBusqueda" placeholder="Buscar por paciente o tratamiento..." autocomplete="off" aria-label="Buscar citas">
+          </div>
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" id="filtroEstado" autocomplete="off" aria-label="Filtrar por estado">
+            <option value="">Todos los estados</option>
+            <option value="confirmada">Confirmada</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="completada">Completada</option>
+            <option value="cancelada">Cancelada</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <select class="form-select" id="filtroOdontologo" autocomplete="off" aria-label="Filtrar por odontólogo">
+            <option value="">Todos los odontólogos</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-custom">
+      <div class="table-responsive">
+        <table class="table patients-table mb-0">
+          <thead>
+            <tr>
+              <th>Paciente</th><th>Fecha y Hora</th><th>Tratamiento</th>
+              <th>Odontólogo</th><th>Duración</th><th>Estado</th><th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyCitas"></tbody>
+        </table>
+        <div class="empty-state d-none" id="citasEmptyState">
+          <i class="bi bi-calendar-x"></i>
+          <div>No hay citas registradas</div>
+          <div class="small-note">Fuente: tabla "citas" (GET /citas)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ============================================================ -->
+<!-- MODAL: NUEVA / EDITAR CITA (se reutiliza el mismo modal para ambas acciones) -->
+<!-- [BACKEND] Nueva -> POST /citas | Editar -> PUT /citas/:id -->
+<!-- ============================================================ -->
+<div class="modal fade" id="modalCita" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title fw-bold mb-0" id="modalCitaTitulo">Nueva Cita</h5>
+          <div class="text-muted small" id="modalCitaSubtitulo">Completa la información para agendar</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        
+        <form id="formCita">
+          <input type="hidden" name="citaId">
+          <div class="row g-3">
+            <div class="col-md-12">
+              <label class="form-label small fw-semibold" for="selectPacienteModal">Paciente *</label>
+              <!-- [BACKEND] GET /api/admin/citas/catalogos/pacientes.php -->
+              <select class="form-select" name="pacienteId" id="selectPacienteModal" required autocomplete="off">
+                <option value="">Cargando pacientes...</option>
+              </select>
+              <div class="text-muted small mt-1">
+                ¿No aparece? Primero regístralo en <a href="pacientes.html">Pacientes</a>.
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold" for="selectServicioModal">Tratamiento *</label>
+              <!-- [BACKEND] GET /api/admin/citas/catalogos/servicios.php -->
+              <select class="form-select" name="servicioId" id="selectServicioModal" required autocomplete="off">
+                <option value="">Cargando servicios...</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold" for="selectDoctorModal">Odontólogo *</label>
+              <!-- [BACKEND] GET /api/admin/citas/catalogos/doctores.php -->
+              <select class="form-select" name="doctorId" id="selectDoctorModal" required autocomplete="off">
+                <option value="">Cargando odontólogos...</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold" for="citaFecha">Fecha *</label>
+              <input type="date" class="form-control" id="citaFecha" name="fecha" required autocomplete="off">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold" for="citaHora">Hora *</label>
+              <input type="time" class="form-control" id="citaHora" name="hora" min="08:00" max="20:59" required autocomplete="off">
+              <div class="text-muted small mt-1" id="duracionInfo"></div>
+            </div>
+            <div class="col-md-12 d-none" id="avisoHorarioCerrado">
+              <div class="alert alert-warning py-2 px-3 small mb-0"><i class="bi bi-exclamation-triangle-fill"></i> <span id="avisoHorarioCerradoTexto"></span></div>
+            </div>
+            <div class="col-md-12">
+              <label class="form-label small fw-semibold" for="citaEstado">Estado *</label>
+              <select class="form-select" id="citaEstado" name="estado" required autocomplete="off">
+                <option value="pendiente">Pendiente</option>
+                <option value="confirmada">Confirmada</option>
+                <option value="completada">Completada</option>
+                <option value="cancelada">Cancelada</option>
+              </select>
+            </div>
+            <div class="col-md-12">
+              <label class="form-label small fw-semibold" for="citaNotas">Notas</label>
+              <textarea class="form-control" id="citaNotas" name="notas" rows="2" placeholder="Información adicional sobre la cita..." autocomplete="off"></textarea>
+            </div>
+          </div>
+        </form>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-soft" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="formCita" class="btn btn-teal" id="btnGuardarCita">Crear Cita</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../scripts/components/admin-sidebar.js"></script>
+
+<!-- Cada módulo del admin vive en su propio archivo -->
+<script src="../scripts/components/admin-sesion.js"></script>
+<script src="../scripts/components/admin-notificaciones.js"></script>
+<script src="../scripts/components/admin-citas.js"></script>
+
+</body>
+</html>

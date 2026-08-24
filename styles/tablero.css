@@ -1,0 +1,621 @@
+:root{
+  --teal: #0d9488;
+  --teal-light: #e6f7f5;
+  --teal-dark: #0f766e;
+  --bg: #f8fafc;
+  --border: #e9edf1;
+  --text-muted: #8a94a6;
+}
+
+body{
+  background: var(--bg);
+  font-family: "Segoe UI", 
+  system-ui,
+  -apple-system,
+  sans-serif;
+  color: #1f2937;
+  font-size: 0.9rem;
+}
+
+/* Sidebar */
+.sidebar{
+  width: 230px;
+  min-height: 100vh;
+  background: #fff;
+  border-right: 1px solid var(--border);
+  position: fixed;
+  top:0; 
+  left:0;
+  bottom:0;
+  display:flex;
+  flex-direction: column;
+  padding: 1.25rem 0.9rem;
+  }
+
+.brand-icon{
+  width:34px;
+  height:34px;
+  background: var(--teal);
+  border-radius: 9px;
+  display:flex; 
+  align-items:center; 
+  justify-content:center;
+  color:#fff;
+  flex-shrink:0;
+}
+
+.brand-name{ 
+  font-weight:700;
+  font-size:0.95rem;
+  line-height:1.1;
+}
+
+.brand-sub{ 
+  font-size:0.7rem;
+  color: var(--text-muted);
+}
+
+.nav-link-custom{
+  display:flex; 
+  align-items:center; 
+  gap:0.6rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 8px;
+  color:#475569;
+  font-size:0.85rem;
+  text-decoration:none;
+  margin-bottom: 2px;
+}
+
+.nav-link-custom i{ 
+  font-size:1rem;
+  width:18px; 
+  text-align:center; 
+}
+
+.nav-link-custom:hover{ 
+  background: var(--bg); 
+  color:#1f2937; 
+}
+
+.nav-link-custom.active{
+  background: var(--teal-light);
+  color: var(--teal-dark);
+  font-weight:600;
+}
+
+.nav-logout{ 
+  color:#e11d48; 
+}
+
+.nav-logout:hover{
+  background:#fef2f2;
+  color:#e11d48; 
+}
+
+.main-content{ 
+  margin-left:230px;
+  padding: 1.5rem 1.75rem; 
+}
+
+.top-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom: 1.25rem;
+}
+
+.top-header h4{ 
+  font-weight:700;
+  margin:0;
+}
+
+.icon-btn{
+  width:38px;
+  height:38px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative; 
+  color:#475569;
+}
+
+.avatar-sm{
+  width:36px; 
+  height:36px; 
+  border-radius:50%;
+  background: var(--teal);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:600;
+  font-size:0.8rem;
+}
+
+.card-custom{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.1rem 1.25rem;
+}
+
+/* Antes estos dos eran gris pálido (#cbd5e1), pensados como
+"placeholder" para cuando aún no había datos reales. Ahora que
+el dashboard sí trae datos de la BD, deben verse con color real.*/
+.stat-value{ 
+  font-size:1.6rem;
+  font-weight:700;
+  color:#1f2937;
+}
+
+.stat-label{ 
+  font-size:0.78rem;
+   color: var(--text-muted);
+}
+
+.segmented{
+  display:inline-flex;
+  background:#f1f5f9;
+  border-radius:9px; 
+  padding:3px;
+}
+
+.segmented button{
+  border:none; 
+  background:transparent; 
+  font-size:0.78rem; 
+  padding:0.3rem 0.75rem;
+  border-radius:7px; 
+  color:#475569; 
+  font-weight:500;
+  cursor:pointer;
+}
+
+.segmented button.active{ 
+  background: var(--teal); 
+  color:#fff; 
+}
+  
+/* Antes era gris (#e2e8f0 / #94a3b8) como placeholder. */
+.avatar-initial{  
+  width:38px; 
+  height:38px; 
+  border-radius:9px;  
+  background: var(--teal);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:600;
+  font-size:0.78rem;
+  flex-shrink:0;
+}
+
+.appt-row{
+  display:flex; 
+  align-items:center;
+  gap:0.75rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.appt-row:last-child{ 
+  border-bottom:none; 
+}
+
+.appt-name{ 
+  font-weight:600;
+  font-size:0.85rem; 
+}
+
+.appt-sub{ 
+  font-size:0.72rem;
+  color:var(--text-muted); 
+}
+
+.placeholder-text{ 
+  color:#cbd5e1; 
+}
+
+.empty-state{
+  text-align:center; 
+  padding: 2.2rem 1rem;
+  color: var(--text-muted);
+}
+  
+.empty-state i{ 
+  font-size:1.6rem;
+  color:#cbd5e1; 
+}
+  
+.empty-state .small-note{ 
+font-size:0.72rem; 
+color:#b6bec9; 
+margin-top:0.25rem;
+}
+
+  
+/* La barra de progreso era gris (#d7dee4) siempre; ahora refleja
+el valor real con el color de marca. */
+.progress-treat{ 
+  height:8px; 
+  border-radius:10px;
+  background:#eef2f6; 
+}
+
+.progress-treat .bar{ 
+  height:100%; 
+  border-radius:10px;
+  background: var(--teal); 
+}
+
+.chart-placeholder{
+  height:200px; 
+  border:1px dashed var(--border); 
+  border-radius:10px;
+  display:flex; 
+  align-items:center; 
+  justify-content:center;
+  color: var(--text-muted); 
+  font-size:0.8rem; 
+  flex-direction:column;
+  gap:0.4rem;
+}
+  
+.section-title{ 
+  font-weight:700; 
+  font-size:0.95rem;
+  margin-bottom:0.1rem; 
+}
+
+.section-sub{ 
+  font-size:0.76rem;
+  color:var(--text-muted);
+}
+
+.link-teal{ 
+  color: var(--teal-dark);
+  font-size:0.8rem;
+  font-weight:600;
+  text-decoration:none;
+}
+
+.todo-tag{
+  display:inline-block; 
+  font-size:0.65rem; 
+  font-weight:700; 
+  letter-spacing:.03em;
+  background:#fff7ed; 
+  color:#c2410c; 
+  border:1px solid #fed7aa;
+  padding:0.1rem 0.4rem; 
+  border-radius:5px; 
+  margin-left:0.4rem; 
+  vertical-align:middle;
+}
+
+/* ==========================================================
+  NUEVO: estas clases las usa admin-dashboard.js pero nunca
+  se habían definido en el CSS — por eso "Citas de Hoy" y
+  "Pagos Recientes" se veían como texto plano sin estilo.
+  ========================================================== */
+
+.status-badge{
+    font-size:0.68rem; 
+    font-weight:700;
+    padding:0.25rem 0.55rem;
+    border-radius:999px; 
+    white-space:nowrap;
+}
+
+.status-confirmada{ 
+  background:#dcfce7;
+  color:#15803d;
+}
+
+.status-pendiente{ 
+  background:#fef9c3;
+  color:#a16207;
+}
+
+.payment-row{
+  padding:0.65rem 0;
+  border-bottom:1px solid var(--border);
+}
+
+.payment-row:last-child{ 
+  border-bottom:none;
+}
+
+.payment-name{
+  font-weight:600;
+  font-size:0.85rem;
+}
+
+.payment-sub{ 
+  font-size:0.72rem;
+  color:var(--text-muted);
+}
+
+.payment-amount{
+  font-weight:700;
+  font-size:0.9rem;
+  color:#1f2937; 
+}
+
+.payment-method{
+  font-size:0.68rem; 
+  color:var(--text-muted); 
+  background:#f1f5f9;
+  padding:0.15rem 0.5rem;
+  border-radius:6px;
+  display:inline-block;
+  margin-top:0.2rem;
+}
+
+/* ==========================================================
+    NUEVO: clases que usa pacientes.html (KPIs, tabla, badges
+    de estado activo/inactivo, botones). No existían todavía.
+  ========================================================== */
+
+.btn-teal{ 
+  background:var(--teal);
+  color:#fff;
+  border:none;
+  font-weight:600; 
+}
+
+.btn-teal:hover{ 
+  background:var(--teal-dark);
+  color:#fff;
+}
+
+.btn-outline-soft{ 
+  background:#fff;
+  border:1px solid var(--border);
+  color:#475569;
+}
+
+.btn-outline-soft:hover{
+  background:var(--bg);
+}
+
+.kpi-teal{ 
+  border-left:3px solid var(--teal); 
+}
+
+.kpi-orange{ 
+  border-left:3px solid #f59e0b; 
+}
+
+.kpi-label{ 
+  font-size:0.78rem;
+  color:var(--text-muted); 
+  margin-bottom:0.3rem; 
+}
+
+.kpi-label.orange{ 
+  color:#b45309; 
+}
+
+.kpi-value{ 
+  font-size:1.5rem; 
+  font-weight:700;
+  color:#1f2937; 
+}
+
+.kpi-value.orange{ 
+  color:#d97706; 
+}
+
+.avatar-initial-sq{
+  width:38px; 
+  height:38px; 
+  border-radius:9px;
+  background: var(--teal-light);
+  color: var(--teal-dark);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:600;
+  font-size:0.78rem;
+  flex-shrink:0;
+}
+
+.patients-table{ 
+  font-size:0.85rem; 
+}
+
+.patients-table thead th{
+  font-size:0.72rem;
+  text-transform:uppercase;
+  letter-spacing:.03em;
+  color:var(--text-muted);
+  font-weight:700;
+  border-bottom:1px solid var(--border);  
+  padding-bottom:0.6rem;
+}
+
+.patients-table tbody td{ 
+  padding:0.75rem 0.5rem;
+  vertical-align:middle;
+  border-bottom:1px solid var(--border);
+}
+
+.patients-table tbody tr:last-child td{ 
+  border-bottom:none; 
+}
+
+.action-icon{
+    cursor:pointer; 
+    color:#64748b; 
+    font-size:1rem; 
+    margin-right:0.6rem;
+}
+
+.action-icon:hover{
+  color: var(--teal-dark);
+}
+
+.status-activo{ 
+  background:#dcfce7;
+  color:#15803d;
+  font-size:0.68rem;
+  font-weight:700;
+  padding:0.25rem 0.55rem;
+  border-radius:999px;
+}
+
+.status-inactivo{
+  background:#f1f5f9;
+  color:#64748b;
+  font-size:0.68rem;
+  font-weight:700;
+  padding:0.25rem 0.55rem;
+  border-radius:999px;
+}
+
+/* ==========================================================
+  NUEVO: clases que usa citas.html — estados de cita, tabla
+  del calendario semanal, y fila apagada para citas canceladas.
+  ========================================================== */
+.status-confirmada{ 
+  background:#dcfce7;
+  color:#15803d;
+  font-size:0.68rem;
+  font-weight:700;
+  padding:0.25rem 0.55rem;
+  border-radius:999px;
+}
+
+.status-pendiente{ 
+  background:#fef9c3; 
+  color:#a16207; 
+  font-size:0.68rem; 
+  font-weight:700; 
+  padding:0.25rem 0.55rem; 
+  border-radius:999px; 
+}
+
+.status-completada{ 
+  background:#dbeafe; 
+  color:#1d4ed8; 
+  font-size:0.68rem; 
+  font-weight:700; 
+  padding:0.25rem 0.55rem; 
+  border-radius:999px; 
+}
+
+.status-cancelada{
+  background:#fee2e2;
+  color:#b91c1c;
+  font-size:0.68rem;
+  font-weight:700;
+  padding:0.25rem 0.55rem;
+  border-radius:999px;
+}
+
+#tbodyCitas tr.cancelada{
+  opacity:0.55; 
+}
+
+#tablaCalendario{
+  width:100%;
+  border-collapse:collapse;
+}
+  
+#tablaCalendario th{
+  padding:0.6rem 0.4rem;
+  font-size:0.72rem;
+  text-align:center;
+  color:var(--text-muted);
+  border-bottom:1px solid var(--border); 
+  font-weight:700;
+}
+
+#tablaCalendario th.today-col{ 
+  color:var(--teal-dark); 
+  background:var(--teal-light); 
+  border-radius:8px 8px 0 0; 
+}
+
+#tablaCalendario td{ 
+  border:1px solid var(--border); 
+  height:52px; 
+}
+
+#tablaCalendario td.hour-col{
+  font-size:0.72rem; 
+  color:var(--text-muted); 
+  text-align:right;
+  padding-right:0.6rem;
+  border:none; 
+  vertical-align:top;
+}
+
+#tablaCalendario td.cal-slot{ 
+  vertical-align:top; 
+  padding:2px; 
+  position:relative; 
+}
+
+.cal-event{
+  font-size:0.68rem; 
+  font-weight:600; 
+  padding:2px 5px; 
+  border-radius:4px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  cursor:pointer;
+  margin-bottom:2px;
+}
+
+.cal-event:hover{ 
+  filter:brightness(0.95); 
+}
+
+/* ==========================================================
+   NUEVO: estilo de pestañas y tarjetas KPI SOLO para el modal
+   de detalle de Pacientes (#modalDetallePaciente). Se escribe
+   con este prefijo a propósito para no afectar .nav-tabs-custom
+   ni .kpi-teal/.kpi-orange en otros módulos que ya los usan.
+   ========================================================== */
+
+#modalDetallePaciente .nav-tabs-custom{
+  border-bottom: none;
+  gap: 0.4rem;
+}
+#modalDetallePaciente .nav-tabs-custom .nav-link{
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 8px;
+}
+
+#modalDetallePaciente .nav-tabs-custom .nav-link:hover{
+  background: var(--bg);
+  color: #1f2937;
+}
+
+#modalDetallePaciente .nav-tabs-custom .nav-link.active{
+  background: var(--teal-light);
+  color: var(--teal-dark);
+}
+
+#modalDetallePaciente .kpi-teal{
+  background: var(--teal-light);
+  border-left: 3px solid var(--teal);
+}
+
+#modalDetallePaciente .kpi-orange{
+  background: #fff7ed;
+  border-left: 3px solid #f59e0b;
+}

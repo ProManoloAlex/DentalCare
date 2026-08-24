@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <title>DentalCare - Tablero de Control</title>
+    <link rel="stylesheet" href="../styles/portal.css">
+    <link rel="icon" type="image/svg+xml" href="https://api.iconify.design/fluent-emoji-flat:tooth.svg">    
+    <script src="../scripts/components/admin-head-loader.js"></script>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<dental-sidebar></dental-sidebar>
+
+<div class="main-content">
+
+  <div class="top-header">
+    <h4>Tablero de Control</h4>
+    <div class="d-flex align-items-center gap-3">
+      <dental-notificaciones></dental-notificaciones>
+      <!-- [BACKEND] GET /api/admin/perfil.php -> llena esto (admin-sesion.js) -->
+      <div class="d-flex align-items-center gap-2">
+        <span class="text-muted small" id="adminNombre">Cargando...</span>
+        <div class="avatar-sm" id="adminAvatarInicial">–</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+      <div class="section-title">Resumen General</div>
+      <div class="section-sub">Vista general de la clínica</div>
+    </div>
+    <div class="segmented" id="selectorPeriodo">
+      <button data-periodo="hoy" class="active">Hoy</button>
+      <button data-periodo="semana">Semana</button>
+      <button data-periodo="mes">Mes</button>
+    </div>
+  </div>
+
+  <!-- [BACKEND] GET /api/admin/dashboard/resumen.php -> se pinta con renderResumen() -->
+  <div class="row g-3 mb-3">
+    <div class="col-6 col-lg-3">
+      <div class="card-custom h-100">
+        <span class="stat-value" id="kpiCitas">–</span>
+        <div class="stat-label" id="lblKpiCitas">Citas Hoy</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card-custom h-100">
+        <span class="stat-value" id="kpiPacientesActivos">–</span>
+        <div class="stat-label">Pacientes Activos</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card-custom h-100">
+        <span class="stat-value" id="kpiIngresos">–</span>
+        <div class="stat-label" id="lblKpiIngresos">Ingresos del Día</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card-custom h-100">
+        <span class="stat-value" id="kpiCitasPendientes">–</span>
+        <div class="stat-label">Citas Pendientes</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- [BACKEND] mismo endpoint de arriba, campo ingresosMensuales -->
+  <div class="card-custom mb-3">
+    <div class="d-flex justify-content-between align-items-start">
+      <div>
+        <div class="section-title">Ingresos Mensuales</div>
+        <div class="section-sub">Últimos 6 meses</div>
+      </div>
+      <div class="text-end">
+        <div class="fw-bold fs-5" id="ingresosTotalTexto">–</div>
+      </div>
+    </div>
+    <div id="chartContainer" class="mt-2">
+      <canvas id="ingresosChart" height="80"></canvas>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-lg-8">
+      <div class="card-custom h-100">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="section-title mb-0" id="tituloCitasCard">Citas de Hoy</div>
+          <a href="citas.html" class="link-teal">Ver todas</a>
+        </div>
+
+        <!-- [BACKEND] mismo endpoint de arriba, campo citasHoy -->
+        <div id="citasHoyContainer"></div>
+        <div class="empty-state d-none" id="citasHoyEmpty">
+          <i class="bi bi-calendar3"></i>
+          <div>No hay citas programadas para hoy</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card-custom h-100">
+        <div class="section-title mb-2">Pagos Recientes</div>
+        <!-- [BACKEND] mismo endpoint de arriba, campo pagosRecientes -->
+        <div id="pagosRecientesContainer"></div>
+        <div class="empty-state d-none" id="pagosRecientesEmpty">
+          <i class="bi bi-cash-stack"></i>
+          <div>Aún no hay pagos registrados</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-custom mb-4">
+    <div class="section-title">Tratamientos Más Solicitados</div>
+    <div class="section-sub mb-3">Este mes</div>
+
+    <!-- [BACKEND] mismo endpoint de arriba, campo tratamientosTop -->
+    <div id="tratamientosContainer"></div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="../scripts/components/admin-sidebar.js"></script>
+
+<!-- Cada módulo del admin vive en su propio archivo -->
+<script src="../scripts/components/admin-sesion.js"></script>
+<script src="../scripts/components/admin-notificaciones.js"></script>
+<script src="../scripts/components/admin-dashboard.js"></script>
+
+</body>
+</html>

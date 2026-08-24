@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <title>DentalCare - Informes y Reportes</title>
+    <link rel="stylesheet" href="../styles/portal.css">
+    <script src="../scripts/components/admin-head-loader.js"></script>    <style>
+      .kpi-report{ background:#fff; border:1px solid var(--border); border-radius:14px; padding:1rem 1.1rem; height:100%; }
+      .kpi-report .icon-round{ width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:0.85rem; margin-bottom:0.5rem; }
+      .kpi-report .val{ font-size:1.4rem; font-weight:700; }
+      .kpi-report .lbl{ font-size:0.78rem; color:#475569; }
+      .kpi-report .sub{ font-size:0.7rem; color:var(--text-muted); }
+
+      .tabs-rep .btn{ font-size:0.82rem; }
+
+      .hbar-row{ margin-bottom:1rem; }
+      .hbar-row:last-child{ margin-bottom:0; }
+      .hbar-label{ display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:0.3rem; }
+      .hbar-track{ height:8px; border-radius:10px; background:#eef2f6; overflow:hidden; }
+      .hbar-fill{ height:100%; border-radius:10px; }
+
+      .cat-tag-rep{ font-size:0.68rem; font-weight:600; padding:0.1rem 0.5rem; border-radius:6px; margin-left:0.4rem; }
+
+      .gender-bar{ display:flex; height:14px; border-radius:10px; overflow:hidden; margin-bottom:0.5rem; }
+
+      .rank-row{ display:flex; align-items:center; gap:0.7rem; padding:0.7rem 0; border-bottom:1px solid var(--border); }
+      .rank-row:last-child{ border-bottom:none; }
+      .rank-num{ width:20px; font-weight:700; color:var(--text-muted); }
+      .rank-bar-track{ height:6px; border-radius:10px; background:#eef2f6; flex-grow:1; }
+      .rank-bar-fill{ height:100%; border-radius:10px; background:var(--teal); }
+
+      .dentist-card{ background:#fff; border:1px solid var(--border); border-radius:14px; padding:1rem 1.1rem; height:100%; }
+      .dentist-avatar{ width:38px; height:38px; border-radius:9px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:0.8rem; }
+      .dentist-stat-lbl{ font-size:0.72rem; color:var(--text-muted); }
+      .dentist-stat-val{ font-weight:700; font-size:0.95rem; }
+
+      /* Encabezado que solo se ve al imprimir/exportar a PDF */
+      #printHeader{ display:none; }
+
+      @media print {
+        dental-sidebar, .top-header, .tabs-rep, #selectorPeriodo,
+        #btnExportarPDF, #btnExportarExcel { display: none !important; }
+        .main-content { margin: 0 !important; padding: 1rem !important; }
+        #printHeader { display: block !important; margin-bottom: 1rem; border-bottom: 2px solid #0d9488; padding-bottom: 0.5rem; }
+      }
+</style>
+</head>
+
+<body>
+
+<!--
+  ==========================================================
+  MÓDULO REPORTES — DATOS MOCK DE SOLO LECTURA
+  5 pestañas: General, Financiero, Pacientes, Tratamientos, Dentistas.
+  A diferencia de los otros módulos, este es principalmente de
+  visualización (no hay formularios de creación). Busca [BACKEND].
+  ==========================================================
+-->
+
+<dental-sidebar></dental-sidebar>
+
+<div class="main-content">
+
+  <div id="printHeader">
+    <h4 class="fw-bold mb-0">DentalCare — Informe <span id="printTabNombre"></span></h4>
+    <div class="text-muted small">Periodo: <span id="printPeriodo"></span> · Generado: <span id="printFecha"></span></div>
+  </div>
+
+  <div class="top-header">
+    <h4>Informes y Reportes</h4>
+    <div class="d-flex align-items-center gap-3">
+      <dental-notificaciones></dental-notificaciones>
+      <div class="d-flex align-items-center gap-2">
+        <span class="text-muted small" id="adminNombre">Cargando...</span>
+        <div class="avatar-sm" id="adminAvatarInicial">–</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+    <div>
+      <h5 class="fw-bold mb-0">Informes y Reportes</h5>
+      <div class="section-sub text-muted small">Análisis detallado del rendimiento de la clínica</div>
+    </div>
+    <div class="d-flex gap-2">
+      <!-- [BACKEND] Cambiar el periodo debe volver a pedir todos los datos de esta página con ?periodo= -->
+      <select class="form-select" id="selectorPeriodo" style="max-width:160px;"></select>
+      <!-- [BACKEND] Generar PDF/Excel real en el servidor con los datos del periodo seleccionado -->
+      <button class="btn btn-outline-soft" id="btnExportarPDF"><i class="bi bi-file-earmark-pdf"></i> Exportar PDF</button>
+      <button class="btn btn-outline-soft" id="btnExportarExcel"><i class="bi bi-file-earmark-excel"></i> Exportar Excel</button>
+    </div>
+  </div>
+
+  <div class="btn-group tabs-rep mb-3 flex-wrap" role="group">
+    <button class="btn btn-teal" id="tabGeneral"><i class="bi bi-grid"></i> General</button>
+    <button class="btn btn-outline-soft" id="tabFinanciero"><i class="bi bi-graph-up"></i> Financiero</button>
+    <button class="btn btn-outline-soft" id="tabPacientes"><i class="bi bi-person"></i> Pacientes</button>
+    <button class="btn btn-outline-soft" id="tabTratamientos"><i class="bi bi-shield-plus"></i> Tratamientos</button>
+    <button class="btn btn-outline-soft" id="tabDentistas"><i class="bi bi-heart-pulse"></i> Dentistas</button>
+  </div>
+
+  <!-- ===================== TAB: GENERAL ===================== -->
+  <!-- [BACKEND] GET /reportes/general?periodo= -->
+  <div id="vistaGeneral">
+    <div class="row g-3 mb-3">
+      <div class="col-6 col-lg-2"><div class="kpi-report"><div class="icon-round" style="background:var(--teal-light); color:var(--teal-dark)"><i class="bi bi-person"></i></div><div class="val">348</div><div class="lbl">Pacientes Totales</div><div class="sub">+24 este mes</div></div></div>
+      <div class="col-6 col-lg-2"><div class="kpi-report"><div class="icon-round" style="background:var(--teal-light); color:var(--teal-dark)"><i class="bi bi-calendar-check"></i></div><div class="val">98</div><div class="lbl">Citas Completadas</div><div class="sub">de 112 programadas</div></div></div>
+      <div class="col-6 col-lg-2"><div class="kpi-report"><div class="icon-round" style="background:#fef3c7; color:#d97706"><i class="bi bi-clock"></i></div><div class="val">87.5%</div><div class="lbl">Tasa de Asistencia</div><div class="sub">14 cancelaciones</div></div></div>
+      <div class="col-6 col-lg-2"><div class="kpi-report"><div class="icon-round" style="background:var(--teal-light); color:var(--teal-dark)"><i class="bi bi-currency-dollar"></i></div><div class="val">$48,750</div><div class="lbl">Ingresos del Mes</div><div class="sub">Margen: 68.6%</div></div></div>
+      <div class="col-6 col-lg-2"><div class="kpi-report"><div class="icon-round" style="background:var(--teal-light); color:var(--teal-dark)"><i class="bi bi-bar-chart"></i></div><div class="val">$33,430</div><div class="lbl">Utilidad Neta</div><div class="sub">Después de gastos</div></div></div>
+      <div class="col-6 col-lg-2"><div class="kpi-report"><div class="icon-round" style="background:#fee2e2; color:#dc2626"><i class="bi bi-shield-plus"></i></div><div class="val">47</div><div class="lbl">Tratamientos Activos</div><div class="sub">31 completados este mes</div></div></div>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-lg-6">
+        <div class="card-custom">
+          <div class="section-title mb-0">Citas por Mes</div>
+          <div class="section-sub">Últimos 6 meses</div>
+          <canvas id="chartCitasMes" height="150" class="mt-2"></canvas>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="card-custom">
+          <div class="section-title mb-0">Pacientes Atendidos por Mes</div>
+          <div class="section-sub">Últimos 6 meses</div>
+          <canvas id="chartPacientesMes" height="150" class="mt-2"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-custom">
+      <h6 class="fw-bold">Resumen Ejecutivo — <span id="periodoTextoGeneral">--</span></h6>
+      <div class="row g-4 mt-1">
+        <div class="col-md-4">
+          <div class="text-muted small fw-semibold mb-2">OPERACIONES</div>
+          <div class="d-flex justify-content-between small py-1"><span>Citas programadas</span><span class="fw-semibold">112</span></div>
+          <div class="d-flex justify-content-between small py-1"><span>Citas completadas</span><span class="fw-semibold" style="color:var(--teal-dark)">98</span></div>
+          <div class="d-flex justify-content-between small py-1"><span>Citas canceladas</span><span class="fw-semibold text-danger">14</span></div>
+          <div class="d-flex justify-content-between small py-1"><span>Tasa de asistencia</span><span class="fw-semibold">87.5%</span></div>
+        </div>
+        <div class="col-md-4">
+          <div class="text-muted small fw-semibold mb-2">PACIENTES</div>
+          <div class="d-flex justify-content-between small py-1"><span>Total registrados</span><span class="fw-semibold">348</span></div>
+          <div class="d-flex justify-content-between small py-1"><span>Nuevos este mes</span><span class="fw-semibold" style="color:var(--teal-dark)">+24</span></div>
+          <div class="d-flex justify-content-between small py-1"><span>Atendidos este mes</span><span class="fw-semibold">87</span></div>
+          <div class="d-flex justify-content-between small py-1"><span>Tratamientos activos</span><span class="fw-semibold">47</span></div>
+        </div>
+        <div class="col-md-4">
+          <div class="text-muted small fw-semibold mb-2">FINANCIERO</div>
+          <div class="d-flex justify-content-between small py-1"><span>Ingresos</span><span class="fw-semibold" style="color:var(--teal-dark)">$48,750</span></div>
+          <div class="d-flex justify-content-between small py-1"><span>Gastos</span><span class="fw-semibold text-danger">$15,320</span></div>
+          <div class="d-flex justify-content-between small py-1"><span>Utilidad neta</span><span class="fw-semibold" style="color:var(--teal-dark)">$33,430</span></div>
+          <div class="d-flex justify-content-between small py-1"><span>Margen de utilidad</span><span class="fw-semibold text-warning">68.6%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== TAB: FINANCIERO ===================== -->
+  <!-- [BACKEND] GET /reportes/financiero?periodo= -->
+  <div id="vistaFinanciero" class="d-none">
+    <div class="row g-3 mb-3">
+      <div class="col-md-4"><div class="kpi-report"><div class="lbl">Ingresos Totales (6m)</div><div class="val" style="color:var(--teal-dark)">$234,250</div><div class="sub">Promedio mensual: $39,041.67</div></div></div>
+      <div class="col-md-4"><div class="kpi-report"><div class="lbl">Gastos Totales (6m)</div><div class="val text-danger">$77,320</div><div class="sub">Promedio mensual: $12,886.67</div></div></div>
+      <div class="col-md-4"><div class="kpi-report"><div class="lbl">Utilidad Acumulada (6m)</div><div class="val" style="color:var(--teal-dark)">$156,930</div><div class="sub">Margen promedio: 67.0%</div></div></div>
+    </div>
+
+    <div class="card-custom mb-3">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <div class="section-title mb-0">Ingresos · Gastos · Utilidad por Mes</div>
+          <div class="section-sub">Últimos 6 meses</div>
+        </div>
+        <div class="small">
+          <span class="chart-legend-dot" style="background:#0d9488; width:9px;height:9px;border-radius:50%;display:inline-block;"></span> Ingresos
+          <span class="chart-legend-dot ms-2" style="background:#f472b6; width:9px;height:9px;border-radius:50%;display:inline-block;"></span> Gastos
+          <span class="chart-legend-dot ms-2" style="background:#2dd4bf; width:9px;height:9px;border-radius:50%;display:inline-block;"></span> Utilidad
+        </div>
+      </div>
+      <canvas id="chartFinanciero" height="90" class="mt-2"></canvas>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-lg-6">
+        <div class="card-custom">
+          <div class="section-title mb-0">Métodos de Pago</div>
+          <div class="section-sub mb-3">Distribución de ingresos por método — <span id="periodoTextoFinanciero">--</span></div>
+          <div id="metodosPagoContainer"></div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="card-custom">
+          <div class="section-title mb-0">Detalle Mensual</div>
+          <div class="section-sub mb-2">Desglose completo por mes</div>
+          <div class="table-responsive">
+            <table class="table patients-table mb-0" style="font-size:0.78rem;">
+              <thead><tr><th>Mes</th><th>Ingresos</th><th>Gastos</th><th>Utilidad</th><th>%</th></tr></thead>
+              <tbody id="detalleMensualBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== TAB: PACIENTES ===================== -->
+  <!-- [BACKEND] GET /reportes/pacientes?periodo= -->
+  <div id="vistaPacientes" class="d-none">
+    <div class="row g-3 mb-3">
+      <div class="col-md-6"><div class="kpi-report"><div class="icon-round" style="background:var(--teal-light); color:var(--teal-dark)"><i class="bi bi-person"></i></div><div class="val" id="pacTasaRetencion">--</div><div class="lbl">Tasa de Retención</div><div class="sub">Pacientes que regresan</div></div></div>
+      <div class="col-md-6"><div class="kpi-report"><div class="icon-round" style="background:var(--teal-light); color:var(--teal-dark)"><i class="bi bi-calendar3"></i></div><div class="val" id="pacVisitasPromedio">--</div><div class="lbl">Visitas Promedio</div><div class="sub">Visitas por paciente / año</div></div></div>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-lg-7">
+        <div class="card-custom">
+          <div class="section-title mb-0">Nuevos Pacientes por Mes</div>
+          <div class="section-sub">Últimos 6 meses</div>
+          <canvas id="chartNuevosPacientes" height="130" class="mt-2"></canvas>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="card-custom">
+          <div class="section-title mb-0">Distribución por Género</div>
+          <div class="section-sub mb-3">Del total de pacientes registrados</div>
+          <div class="gender-bar">
+            <div style="width:58%; background:#f472b6;"></div>
+            <div style="width:44%; background:#0d9488;"></div>
+          </div>
+          <div class="d-flex justify-content-between small">
+            <span><span class="chart-legend-dot" style="background:#f472b6; width:9px;height:9px;border-radius:50%;display:inline-block;"></span> Femenino 196</span>
+            <span><span class="chart-legend-dot" style="background:#0d9488; width:9px;height:9px;border-radius:50%;display:inline-block;"></span> Masculino 152</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-custom mb-3">
+      <div class="section-title mb-0">Distribución por Grupo de Edad</div>
+      <div class="section-sub mb-3">Perfil demográfico de la cartera de pacientes</div>
+      <div id="edadContainer"></div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-lg-6">
+        <div class="card-custom">
+          <div class="section-title mb-0">Citas por Día de la Semana</div>
+          <div class="section-sub">Días con mayor afluencia</div>
+          <canvas id="chartDiaSemana" height="140" class="mt-2"></canvas>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="card-custom">
+          <div class="section-title mb-0">Citas por Hora del Día</div>
+          <div class="section-sub">Horarios pico de atención</div>
+          <canvas id="chartHoraDia" height="140" class="mt-2"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== TAB: TRATAMIENTOS ===================== -->
+  <!-- [BACKEND] GET /reportes/tratamientos?periodo= -->
+  <div id="vistaTratamientos" class="d-none">
+    <div class="row g-3 mb-3" id="categoriasKpiContainer"></div>
+
+    <div class="card-custom mb-3">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <div class="section-title mb-0">Tratamientos Más Realizados</div>
+          <div class="section-sub">Ranking por frecuencia — <span id="periodoTextoTratamientos">--</span></div>
+        </div>
+        <span class="odo-badge" style="background:var(--teal-light); color:var(--teal-dark); font-size:0.72rem; padding:0.25rem 0.7rem; border-radius:20px;"><span id="totalTratamientosBadge">--</span> tratamientos en total</span>
+      </div>
+      <div id="rankingTratamientosContainer" class="mt-2"></div>
+    </div>
+
+    <div class="card-custom">
+      <div class="section-title mb-0">Ingresos por Categoría de Tratamiento</div>
+      <div class="section-sub mb-3">Contribución de cada categoría a los ingresos totales</div>
+      <div id="ingresosCategoriaContainer"></div>
+    </div>
+  </div>
+
+  <!-- ===================== TAB: DENTISTAS ===================== -->
+  <!-- [BACKEND] GET /reportes/dentistas?periodo= -->
+  <div id="vistaDentistas" class="d-none">
+    <div class="row g-3 mb-3">
+      <div class="col-md-4"><div class="kpi-report"><div class="lbl">Total Citas (equipo)</div><div class="val" id="denTotalCitas">--</div><div class="sub" id="denPromedioCitas">--</div></div></div>
+      <div class="col-md-4"><div class="kpi-report"><div class="lbl">Pacientes Atendidos</div><div class="val" style="color:var(--teal-dark)" id="denPacientesAtendidos">--</div><div class="sub" id="denEntreProfesionales">--</div></div></div>
+      <div class="col-md-4"><div class="kpi-report"><div class="lbl">Ingresos Generados</div><div class="val" id="denIngresos">--</div><div class="sub" id="denPromedioIngresos">--</div></div></div>
+    </div>
+
+    <div class="row g-3 mb-3" id="dentistasContainer"></div>
+
+    <div class="card-custom">
+      <div class="section-title mb-0">Ranking de Rendimiento</div>
+      <div class="section-sub mb-2">Comparativa por indicador clave</div>
+      <div class="table-responsive">
+        <table class="table patients-table mb-0">
+          <thead><tr><th>#</th><th>Dentista</th><th>Citas</th><th>Completadas</th><th>Pacientes</th><th>Ingresos</th></tr></thead>
+          <tbody id="rankingDentistasBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="../scripts/components/admin-sidebar.js"></script>
+<script src="../scripts/components/admin-sesion.js"></script>
+<script src="../scripts/components/admin-notificaciones.js"></script>
+<script src="../scripts/components/admin-reportes.js"></script>
+
+</body>
+</html>

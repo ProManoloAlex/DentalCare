@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <title>DentalCare - Configuración</title>
+    <link rel="stylesheet" href="../styles/portal.css">
+    <script src="../scripts/components/admin-head-loader.js"></script>    
+    <style>
+      .config-subnav-item{
+        display:flex; align-items:center; gap:0.6rem; padding:0.7rem 0.8rem; border-radius:10px;
+        cursor:pointer; margin-bottom:6px; background:#fff; border:1px solid var(--border);
+      }
+      .config-subnav-item:hover{ border-color:var(--teal); }
+      .config-subnav-item.active{ background:var(--teal-light); border-color:var(--teal); }
+      .config-subnav-icon{ width:32px; height:32px; border-radius:8px; background:#eef2f6; color:#475569; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+      .config-subnav-item.active .config-subnav-icon{ background:var(--teal); color:#fff; }
+      .config-subnav-item .lbl{ font-weight:600; font-size:0.85rem; }
+
+      .help-box{ background:var(--teal-light); border-radius:12px; padding:1rem; display:flex; gap:0.7rem; }
+      .help-box .icon-round{ width:32px; height:32px; border-radius:8px; background:var(--teal); color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+
+      .section-header-config{ display:flex; align-items:center; gap:0.7rem; margin-bottom:1rem; }
+      .section-header-config .icon-round{ width:38px; height:38px; border-radius:10px; background:var(--teal); color:#fff; display:flex; align-items:center; justify-content:center; }
+
+      .config-card{ background:#fff; border:1px solid var(--border); border-radius:14px; padding:1.1rem 1.25rem; margin-bottom:1rem; }
+      .config-card h6{ font-weight:700; margin-bottom:0.9rem; display:flex; align-items:center; gap:0.5rem; }
+
+      .switch-cfg{ width:38px; height:22px; border-radius:20px; position:relative; cursor:pointer; transition:0.2s; flex-shrink:0; display:inline-block; }
+      .switch-cfg.on{ background:var(--teal); }
+      .switch-cfg.off{ background:#cbd5e1; }
+      .switch-cfg .knob{ width:18px; height:18px; border-radius:50%; background:#fff; position:absolute; top:2px; transition:0.2s; }
+      .switch-cfg.on .knob{ left:18px; }
+      .switch-cfg.off .knob{ left:2px; }
+
+      .horario-row{ display:flex; align-items:center; gap:1rem; padding:0.5rem 0; }
+      .horario-row .dia-label{ width:90px; font-size:0.85rem; }
+
+      .doctor-row{ display:flex; align-items:center; gap:0.75rem; padding:0.75rem 0; border-bottom:1px solid var(--border); }
+      .doctor-row:last-child{ border-bottom:none; }
+      .doctor-avatar{ width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:0.8rem; }
+      .role-badge{ font-size:0.68rem; font-weight:600; padding:0.1rem 0.5rem; border-radius:6px; background:var(--teal-light); color:var(--teal-dark); }
+      .role-badge.inactivo{ background:#f1f5f9; color:#64748b; }
+
+      .modulo-check{ background:var(--teal-light); color:var(--teal-dark); border-radius:8px; padding:0.5rem 0.8rem; font-size:0.82rem; font-weight:600; display:flex; align-items:center; gap:0.4rem; }
+
+      .notif-evento{ font-weight:600; font-size:0.83rem; }
+      .notif-desc{ font-size:0.75rem; color:var(--text-muted); }
+
+      .alert-interna-row{ display:flex; justify-content:space-between; align-items:center; padding:0.7rem 0; border-bottom:1px solid var(--border); }
+      .alert-interna-row:last-child{ border-bottom:none; }
+
+      .sesion-row{ display:flex; align-items:center; gap:0.7rem; padding:0.6rem 0; border-bottom:1px solid var(--border); }
+      .sesion-row:last-child{ border-bottom:none; }
+      .sesion-dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+      .sesion-badge{ font-size:0.68rem; font-weight:600; padding:0.15rem 0.55rem; border-radius:20px; }
+      .sesion-badge.activa{ background:#dcfce7; color:#16a34a; }
+      .sesion-badge.cerrada{ background:#f1f5f9; color:#64748b; }
+
+      .activity-row{ display:flex; align-items:center; gap:0.75rem; padding:0.6rem 0; border-bottom:1px solid var(--border); }
+      .activity-row:last-child{ border-bottom:none; }
+      .activity-tag{ font-size:0.68rem; font-weight:600; padding:0.1rem 0.5rem; border-radius:6px; flex-shrink:0; min-width:90px; text-align:center; }
+</style>
+</head>
+
+<body>
+
+<!--
+  ==========================================================
+  MÓDULO CONFIGURACIÓN — DATOS MOCK + FLUJO EN MEMORIA
+  4 secciones internas: Clínica, Usuarios y Roles, Notificaciones, Seguridad.
+  Mismo patrón que los otros módulos. Busca los comentarios [BACKEND].
+  ==========================================================
+-->
+
+<dental-sidebar></dental-sidebar>
+
+<div class="main-content">
+
+  <div class="top-header">
+    <h4>Configuración</h4>
+    <div class="d-flex align-items-center gap-3">
+      <dental-notificaciones></dental-notificaciones>
+      <div class="d-flex align-items-center gap-2">
+        <span class="text-muted small" id="adminNombre">Cargando...</span>
+        <div class="avatar-sm" id="adminAvatarInicial">–</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <h5 class="fw-bold mb-0">Configuración del Sistema</h5>
+    <div class="section-sub text-muted small">Administra las preferencias y parámetros de tu clínica</div>
+  </div>
+
+  <div class="row g-3">
+    <!-- SUB-NAV IZQUIERDA -->
+    <div class="col-lg-3">
+      <div class="config-subnav-item active" data-section="clinica">
+        <div class="config-subnav-icon"><i class="bi bi-building"></i></div>
+        <span class="lbl">Clínica</span>
+      </div>
+      <div class="config-subnav-item" data-section="usuarios">
+        <div class="config-subnav-icon"><i class="bi bi-people"></i></div>
+        <span class="lbl">Usuarios y Roles</span>
+      </div>
+      <div class="config-subnav-item" data-section="notificaciones">
+        <div class="config-subnav-icon"><i class="bi bi-bell"></i></div>
+        <span class="lbl">Notificaciones</span>
+      </div>
+      <div class="config-subnav-item" data-section="seguridad">
+        <div class="config-subnav-icon"><i class="bi bi-shield-check"></i></div>
+        <span class="lbl">Seguridad</span>
+      </div>
+
+      <div class="help-box mt-2">
+        <div class="icon-round"><i class="bi bi-info-circle"></i></div>
+        <div class="small">
+          <div class="fw-semibold" style="color:var(--teal-dark)">¿Necesitas ayuda?</div>
+          <div class="text-muted">Consulta la documentación o contacta a soporte técnico.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENIDO DERECHA -->
+    <div class="col-lg-9">
+
+      <!-- ===================== SECCIÓN: CLÍNICA ===================== -->
+      <!-- [BACKEND] GET /configuracion/clinica ; PUT /configuracion/clinica -->
+      <div id="seccionClinica">
+        <div class="section-header-config">
+          <div class="icon-round"><i class="bi bi-building"></i></div>
+          <div><div class="fw-bold">Clínica</div><div class="text-muted small">Datos generales, horarios y configuración de agenda</div></div>
+        </div>
+
+        <div class="config-card">
+          <h6><i class="bi bi-info-circle" style="color:var(--teal-dark)"></i> Información de la Clínica</h6>
+          <div class="row g-3">
+            <div class="col-md-6"><label class="form-label small fw-semibold">Nombre de la Clínica</label><input type="text" class="form-control" id="clNombre"></div>
+            <div class="col-md-6"><label class="form-label small fw-semibold">Slogan / Tagline</label><input type="text" class="form-control" id="clSlogan"></div>
+            <div class="col-md-6"><label class="form-label small fw-semibold">Teléfono Principal</label><input type="text" class="form-control" id="clTelefono"></div>
+            <div class="col-md-6"><label class="form-label small fw-semibold">Teléfono de Emergencia</label><input type="text" class="form-control" id="clTelefonoEmergencia"></div>
+            <div class="col-md-6"><label class="form-label small fw-semibold">Correo Electrónico</label><input type="email" class="form-control" id="clCorreo"></div>
+            <div class="col-md-6"><label class="form-label small fw-semibold">Sitio Web</label><input type="text" class="form-control" id="clSitioWeb"></div>
+          </div>
+        </div>
+
+        <div class="config-card">
+          <h6><i class="bi bi-geo-alt" style="color:var(--teal-dark)"></i> Dirección y Ubicación</h6>
+          <div class="row g-3">
+            <div class="col-md-12"><label class="form-label small fw-semibold">Dirección</label><input type="text" class="form-control" id="clDireccion"></div>
+            <div class="col-md-4"><label class="form-label small fw-semibold">Ciudad</label><input type="text" class="form-control" id="clCiudad"></div>
+            <div class="col-md-4"><label class="form-label small fw-semibold">Estado / Provincia</label><input type="text" class="form-control" id="clEstadoProvincia"></div>
+            <div class="col-md-2"><label class="form-label small fw-semibold">Código Postal</label><input type="text" class="form-control" id="clCodigoPostal"></div>
+            <div class="col-md-2"><label class="form-label small fw-semibold">País</label><select class="form-select" id="clPais"><option>México</option><option>Estados Unidos</option><option>España</option></select></div>
+          </div>
+        </div>
+
+        <div class="config-card">
+          <h6><i class="bi bi-receipt" style="color:var(--teal-dark)"></i> Datos Fiscales</h6>
+          <div class="row g-3">
+            <div class="col-md-6"><label class="form-label small fw-semibold">RFC / NIT / CUIT</label><input type="text" class="form-control" id="clRFC"></div>
+            <div class="col-md-6"><label class="form-label small fw-semibold">Razón Social</label><input type="text" class="form-control" id="clRazonSocial"></div>
+            <div class="col-md-6"><label class="form-label small fw-semibold">Moneda</label><select class="form-select" id="clMoneda"><option value="MXN">MXN — Peso Mexicano</option><option value="USD">USD — Dólar Americano</option><option value="EUR">EUR — Euro</option></select></div>
+            <div class="col-md-6"><label class="form-label small fw-semibold">IVA / Impuesto (%)</label><input type="number" class="form-control" id="clIVA"></div>
+          </div>
+        </div>
+
+        <div class="config-card">
+          <h6><i class="bi bi-calendar3" style="color:var(--teal-dark)"></i> Configuración de Agenda</h6>
+          <div class="row g-3 mb-3">
+            <div class="col-md-4"><label class="form-label small fw-semibold">Duración por defecto de cita</label><select class="form-select" id="clDuracionCita"><option value="15">15 minutos</option><option value="30">30 minutos</option><option value="45">45 minutos</option><option value="60">60 minutos</option></select></div>
+            <div class="col-md-4"><label class="form-label small fw-semibold">Intervalo entre citas</label><select class="form-select" id="clIntervalo"><option value="0">0 minutos</option><option value="15">15 minutos</option><option value="30">30 minutos</option></select></div>
+            <div class="col-md-4"><label class="form-label small fw-semibold">Anticipación máxima de reserva</label><select class="form-select" id="clAnticipacion"><option value="30">30 días</option><option value="60">60 días</option><option value="90">90 días</option><option value="180">180 días</option></select></div>
+          </div>
+          <div class="form-label small fw-semibold d-block mb-2">Horarios de Atención</div>
+          <div id="horariosContainer"></div>
+        </div>
+
+        <div class="text-end">
+          <button class="btn btn-teal" id="btnGuardarClinica"><i class="bi bi-save"></i> Guardar Cambios</button>
+        </div>
+      </div>
+
+      <!-- ===================== SECCIÓN: USUARIOS Y ROLES ===================== -->
+      <!-- [BACKEND] GET /configuracion/doctores -->
+      <div id="seccionUsuarios" class="d-none">
+        <div class="section-header-config">
+          <div class="icon-round"><i class="bi bi-people"></i></div>
+          <div><div class="fw-bold">Usuarios y Roles</div><div class="text-muted small">Gestión del personal y permisos de acceso</div></div>
+        </div>
+
+        <div class="config-card">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0"><i class="bi bi-people" style="color:var(--teal-dark)"></i> Doctores del Sistema</h6>
+            <!-- [BACKEND] Abre modal Nuevo Doctor -> al guardar: POST /configuracion/doctores -->
+            <button class="btn btn-teal btn-sm" onclick="prepararModalDoctor()"><i class="bi bi-person-plus"></i> Agregar Doctor</button>
+          </div>
+          <input type="text" class="form-control mb-2" id="buscarDoctor" placeholder="Buscar doctor...">
+          <div id="doctoresContainer"></div>
+          <div class="text-muted small mt-2" id="resumenDoctores"></div>
+        </div>
+
+        <div class="config-card">
+          <h6><i class="bi bi-shield-check" style="color:var(--teal-dark)"></i> Acceso del Doctor</h6>
+          <div class="text-muted small mb-3">Los doctores tienen acceso completo a todos los módulos del sistema.</div>
+          <div class="row g-2">
+            <div class="col-md-3 col-6"><div class="modulo-check"><i class="bi bi-check-circle-fill"></i> Tablero</div></div>
+            <div class="col-md-3 col-6"><div class="modulo-check"><i class="bi bi-check-circle-fill"></i> Pacientes</div></div>
+            <div class="col-md-3 col-6"><div class="modulo-check"><i class="bi bi-check-circle-fill"></i> Citas</div></div>
+            <div class="col-md-3 col-6"><div class="modulo-check"><i class="bi bi-check-circle-fill"></i> Tratamientos</div></div>
+            <div class="col-md-3 col-6"><div class="modulo-check"><i class="bi bi-check-circle-fill"></i> Finanzas</div></div>
+            <div class="col-md-3 col-6"><div class="modulo-check"><i class="bi bi-check-circle-fill"></i> Inventario</div></div>
+            <div class="col-md-3 col-6"><div class="modulo-check"><i class="bi bi-check-circle-fill"></i> Reportes</div></div>
+            <div class="col-md-3 col-6"><div class="modulo-check"><i class="bi bi-check-circle-fill"></i> Configuración</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== SECCIÓN: NOTIFICACIONES ===================== -->
+      <!-- [BACKEND] GET /configuracion/notificaciones ; PUT /configuracion/notificaciones -->
+      <div id="seccionNotificaciones" class="d-none">
+        <div class="section-header-config">
+          <div class="icon-round"><i class="bi bi-bell"></i></div>
+          <div><div class="fw-bold">Notificaciones</div><div class="text-muted small">Recordatorios, alertas y canales de comunicación</div></div>
+        </div>
+
+        <div class="config-card">
+          <h6><i class="bi bi-person-lines-fill" style="color:var(--teal-dark)"></i> Notificaciones a Pacientes</h6>
+          <div class="text-muted small mb-2">Controla si se activa el aviso en tu campana 🔔 para cada tipo de evento (esto te avisa a ti, no al paciente; el envío automático real todavía solo existe para Recordatorios de citas)</div>
+          <div id="tablaNotifPacientes"></div>
+        </div>
+
+        <div class="config-card">
+          <h6><i class="bi bi-people" style="color:var(--teal-dark)"></i> Alertas Internas del Equipo</h6>
+          <div class="text-muted small mb-2">Notificaciones que recibe el personal dentro del sistema</div>
+          <div id="alertasInternasContainer"></div>
+        </div>
+      </div>
+
+      <!-- ===================== SECCIÓN: SEGURIDAD ===================== -->
+      <!-- [BACKEND] GET /configuracion/seguridad ; PUT /configuracion/seguridad -->
+      <div id="seccionSeguridad" class="d-none">
+        <div class="section-header-config">
+          <div class="icon-round"><i class="bi bi-shield-check"></i></div>
+          <div><div class="fw-bold">Seguridad</div><div class="text-muted small">Contraseñas, sesiones y registro de actividad</div></div>
+        </div>
+
+        <div class="config-card">
+          <h6><i class="bi bi-key" style="color:var(--teal-dark)"></i> Cambiar Contraseña</h6>
+          <form id="formPassword">
+            <div class="mb-3"><label class="form-label small fw-semibold">Contraseña Actual</label><input type="password" class="form-control" id="pwActual" placeholder="••••••••" required></div>
+            <div class="mb-3"><label class="form-label small fw-semibold">Nueva Contraseña</label><input type="password" class="form-control" id="pwNueva" placeholder="••••••••" required></div>
+            <div class="mb-3"><label class="form-label small fw-semibold">Confirmar Nueva Contraseña</label><input type="password" class="form-control" id="pwConfirmar" placeholder="••••••••" required></div>
+            <button type="submit" class="btn btn-teal"><i class="bi bi-shield-lock"></i> Actualizar Contraseña</button>
+          </form>
+        </div>
+
+        <div class="config-card">
+          <h6><i class="bi bi-laptop" style="color:var(--teal-dark)"></i> Último Acceso</h6>
+          <div id="sesionesContainer"></div>
+        </div>
+
+        <div class="config-card">
+          <h6><i class="bi bi-clock-history" style="color:var(--teal-dark)"></i> Registro de Actividad</h6>
+          <div id="actividadContainer"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ============================================================ -->
+<!-- MODAL: NUEVO DOCTOR -->
+<!-- [BACKEND] POST /configuracion/doctores -->
+<!-- ============================================================ -->
+<div class="modal fade" id="modalDoctor" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold mb-0" id="modalDoctorTitulo">Nuevo Doctor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formDoctor">
+          <input type="hidden" name="doctorId">
+          <div class="row g-3 mb-3">
+            <div class="col-md-6"><label class="form-label small fw-semibold">Nombre</label><input type="text" class="form-control" name="nombre" required></div>
+            <div class="col-md-6"><label class="form-label small fw-semibold">Apellido</label><input type="text" class="form-control" name="apellido" required></div>
+          </div>
+          <div class="mb-3"><label class="form-label small fw-semibold">Correo Electrónico</label><input type="email" class="form-control" name="email" required></div>
+          <div class="mb-3" id="campoPasswordDoctor"><label class="form-label small fw-semibold">Contraseña</label><input type="password" class="form-control" name="password" minlength="6" placeholder="Mínimo 6 caracteres"></div>
+          <div class="mb-3"><label class="form-label small fw-semibold">Especialidad</label><input type="text" class="form-control" name="especialidad" placeholder="Ej. Ortodoncia"></div>
+          <div class="mb-3"><label class="form-label small fw-semibold">Consultorio</label><input type="text" class="form-control" name="consultorio" placeholder="Ej. Consultorio 1"></div>
+          <div class="d-flex align-items-center gap-2">
+            <div class="switch-cfg on" id="switchDoctorActivo"><div class="knob"></div></div>
+            <span class="small">Doctor activo</span>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-soft" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="formDoctor" class="btn btn-teal" id="btnGuardarDoctor">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../scripts/components/admin-sidebar.js"></script>
+<script src="../scripts/components/admin-sesion.js"></script>
+<script src="../scripts/components/admin-notificaciones.js"></script>
+<script src="../scripts/components/admin-configuracion.js"></script>
+
+
+<script>
+/*
+ * PARCHE DE ACCESIBILIDAD / AUTOCOMPLETE
+ * No modifica el flujo existente del módulo.
+ * Solo completa atributos que DevTools solicita para los campos de formulario.
+ */
+document.addEventListener('DOMContentLoaded', function () {
+
+    // Asocia automáticamente cada <label> con el campo que contiene
+    // o con el siguiente campo de formulario dentro del mismo contenedor.
+    document.querySelectorAll('label:not([for])').forEach(function (label) {
+        let field = label.querySelector('input, select, textarea');
+
+        if (!field) {
+            let next = label.nextElementSibling;
+            while (next && !field) {
+                field = next.matches && next.matches('input, select, textarea')
+                    ? next
+                    : next.querySelector && next.querySelector('input, select, textarea');
+                next = next.nextElementSibling;
+            }
+        }
+
+        if (field) {
+            if (!field.id) {
+                const base = field.name || 'campo';
+                let id = base.replace(/[^a-zA-Z0-9_-]/g, '_');
+                let originalId = id;
+                let counter = 2;
+
+                while (document.getElementById(id)) {
+                    id = originalId + '_' + counter++;
+                }
+
+                field.id = id;
+            }
+
+            label.htmlFor = field.id;
+        }
+    });
+
+    // Los labels del formulario de doctor son hermanos del input.
+    // Este bloque garantiza su asociación incluso si el HTML cambia.
+    document.querySelectorAll('#formDoctor label').forEach(function (label) {
+        if (label.htmlFor) return;
+
+        const field = label.parentElement
+            ? label.parentElement.querySelector('input, select, textarea')
+            : null;
+
+        if (field) {
+            if (!field.id) {
+                const base = field.name || 'campoDoctor';
+                let id = 'doctor_' + base.replace(/[^a-zA-Z0-9_-]/g, '_');
+                let originalId = id;
+                let counter = 2;
+
+                while (document.getElementById(id)) {
+                    id = originalId + '_' + counter++;
+                }
+
+                field.id = id;
+            }
+
+            label.htmlFor = field.id;
+        }
+    });
+
+    // Atributos autocomplete para que el navegador pueda reconocer
+    // correctamente los campos y evitar la advertencia de DevTools.
+    document.querySelectorAll('input, select, textarea').forEach(function (field) {
+        if (field.hasAttribute('autocomplete')) return;
+
+        const key = (
+            (field.name || '') + ' ' +
+            (field.id || '') + ' ' +
+            (field.placeholder || '')
+        ).toLowerCase();
+
+        let autocomplete = 'off';
+
+        if (field.type === 'password') {
+            if (key.includes('actual')) {
+                autocomplete = 'current-password';
+            } else {
+                autocomplete = 'new-password';
+            }
+        } else if (field.type === 'email' || key.includes('email') || key.includes('correo')) {
+            autocomplete = 'email';
+        } else if (key.includes('nombre') && !key.includes('clinica')) {
+            autocomplete = 'given-name';
+        } else if (key.includes('apellido')) {
+            autocomplete = 'family-name';
+        } else if (key.includes('telefono') || key.includes('tel')) {
+            autocomplete = 'tel';
+        } else if (key.includes('direccion')) {
+            autocomplete = 'street-address';
+        } else if (key.includes('ciudad')) {
+            autocomplete = 'address-level2';
+        } else if (key.includes('estado') || key.includes('provincia')) {
+            autocomplete = 'address-level1';
+        } else if (key.includes('codigo') || key.includes('postal')) {
+            autocomplete = 'postal-code';
+        } else if (key.includes('pais')) {
+            autocomplete = 'country';
+        } else if (key.includes('sitio') || key.includes('web')) {
+            autocomplete = 'url';
+        } else if (field.type === 'number') {
+            autocomplete = 'off';
+        }
+
+        field.setAttribute('autocomplete', autocomplete);
+    });
+
+});
+</script>
+
+</body>
+</html>

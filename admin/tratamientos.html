@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <title>DentalCare - Gestión de Tratamientos</title>
+    <link rel="stylesheet" href="../styles/portal.css">
+    <script src="../scripts/components/admin-head-loader.js"></script>    <style>
+      /* Estilos propios de este módulo. El resto viene de portal.css */
+      .cat-badge{ font-size:0.7rem; font-weight:600; padding:0.15rem 0.55rem; border-radius:6px; display:inline-block; }
+      .cat-Estetico{ background:#e6f7f5; color:#0f766e; }
+      .cat-Restaurativo{ background:#dbeafe; color:#2563eb; }
+      .cat-Cirugia{ background:#fee2e2; color:#dc2626; }
+      .cat-Preventivo{ background:#dcfce7; color:#16a34a; }
+      .cat-Ortodoncia{ background:#fce7f3; color:#c026d3; }
+
+      .service-card{
+        background:#fff; border:1px solid var(--border); border-radius:14px; padding:1.1rem 1.25rem; height:100%;
+      }
+      .service-card h6{ font-weight:700; margin-bottom:0.3rem; }
+      .service-card .desc{ font-size:0.8rem; color:#475569; margin:0.5rem 0; }
+      .service-card .meta{ display:flex; justify-content:space-between; align-items:center; margin-top:0.6rem; }
+      .service-card .duration{ font-size:0.78rem; color:var(--text-muted); }
+      .service-card .price{ font-weight:700; color:#16a34a; }
+      .edit-icon-corner{ color:#94a3b8; cursor:pointer; }
+      .edit-icon-corner:hover{ color:var(--teal-dark); }
+      .service-pausado{ opacity:0.55; background:#f8fafc; }
+      .badge-pausado{
+        font-size:0.62rem; font-weight:700; background:#f1f5f9; color:#64748b;
+        padding:0.15rem 0.4rem; border-radius:6px; vertical-align:middle; margin-left:0.3rem;
+      }
+
+      .kpi-icon-box{
+        width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1rem;
+      }
+      .progress-mini{ height:6px; border-radius:10px; background:#eef2f6; width:110px; }
+      .progress-mini .bar{ height:100%; border-radius:10px; background: var(--teal); }
+      .status-completado{ background:#dcfce7; color:#16a34a; }
+      .status-enprogreso{ background:#fef3c7; color:#d97706; }
+      .status-cancelado{ background:#fee2e2; color:#b91c1c; }
+</style>
+</head>
+
+<body>
+
+<!--
+  ==========================================================
+  MÓDULO TRATAMIENTOS — DATOS DE EJEMPLO (MOCK) + CRUD EN MEMORIA
+  Mismo patrón que Tablero / Pacientes / Citas.
+  Cada función tiene su comentario [BACKEND] con el endpoint real
+  que la debe reemplazar cuando conectes la base de datos.
+  ==========================================================
+-->
+
+<!-- SIDEBAR -->
+<dental-sidebar></dental-sidebar>
+
+<div class="main-content">
+
+  <div class="top-header">
+    <h4>Gestión de Tratamientos</h4>
+    <div class="d-flex align-items-center gap-3">
+      <dental-notificaciones></dental-notificaciones>
+      <div class="d-flex align-items-center gap-2">
+        <span class="text-muted small" id="adminNombre">Cargando...</span>
+        <div class="avatar-sm" id="adminAvatarInicial">–</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <h5 class="fw-bold mb-0">Tratamientos</h5>
+    <div class="section-sub text-muted small">Administra el catálogo de servicios y tratamientos de pacientes</div>
+  </div>
+
+  <!-- Toggle de vistas -->
+  <div class="btn-group mb-3" role="group">
+    <button class="btn btn-teal" id="btnVistaCatalogo"><i class="bi bi-file-earmark-text"></i> Catálogo de Servicios</button>
+    <button class="btn btn-outline-soft" id="btnVistaPacientes"><i class="bi bi-person"></i> Tratamientos de Pacientes</button>
+  </div>
+
+  <!-- ===================== VISTA CATÁLOGO DE SERVICIOS ===================== -->
+  <!-- [BACKEND] GET /tratamientos/catalogo?buscar=&categoria=&orden= -->
+  <div id="vistaCatalogo">
+    <div class="d-flex flex-wrap gap-2 mb-3">
+      <div class="flex-grow-1" style="min-width:220px;">
+        <div class="input-group">
+          <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+          <input type="text" class="form-control border-start-0" id="filtroServicioBusqueda" placeholder="Buscar tratamientos..." autocomplete="off" aria-label="Buscar tratamientos del catálogo">
+        </div>
+      </div>
+      <select class="form-select" id="filtroServicioCategoria" style="max-width:200px;" autocomplete="off" aria-label="Filtrar por categoría">
+        <option value="">Todas las categorías</option>
+        <option value="Preventivo">Preventivo</option>
+        <option value="Restaurativo">Restaurativo</option>
+        <option value="Estetico">Estético</option>
+        <option value="Cirugia">Cirugía</option>
+        <option value="Ortodoncia">Ortodoncia</option>
+      </select>
+      <select class="form-select" id="ordenServicio" style="max-width:160px;" autocomplete="off" aria-label="Ordenar catálogo">
+        <option value="nombre">Nombre</option>
+        <option value="precio">Precio</option>
+      </select>
+      <!-- [BACKEND] Abre modal Nuevo Servicio -> al guardar: POST /tratamientos/catalogo -->
+      <button class="btn btn-teal" onclick="prepararModalServicio()" data-bs-toggle="modal" data-bs-target="#modalServicio">
+        <i class="bi bi-plus-lg"></i> Agregar
+      </button>
+    </div>
+
+    <div class="row g-3" id="gridServicios"></div>
+    <div class="empty-state d-none" id="serviciosEmptyState">
+      <i class="bi bi-file-earmark-text"></i>
+      <div>No hay tratamientos en el catálogo</div>
+      <div class="small-note">Fuente: tabla "catalogo_tratamientos" (GET /tratamientos/catalogo)</div>
+    </div>
+  </div>
+
+  <!-- ===================== VISTA TRATAMIENTOS DE PACIENTES ===================== -->
+  <!-- [BACKEND] GET /tratamientos/pacientes?buscar=&estado=&orden= -->
+  <div id="vistaPacientes" class="d-none">
+
+    <!-- [BACKEND] GET /tratamientos/resumen -> {total, en_progreso, completados, saldo_pendiente} -->
+    <div class="row g-3 mb-3">
+      <div class="col-6 col-lg-3">
+        <div class="card-custom d-flex flex-row align-items-center gap-3">
+          <div class="kpi-icon-box" style="background:var(--teal-light); color:var(--teal-dark)"><i class="bi bi-clipboard2-pulse"></i></div>
+          <div><div class="text-muted small">Total Tratamientos</div><div class="fw-bold fs-5" id="kpiTotalTratamientos">--</div></div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="card-custom d-flex flex-row align-items-center gap-3">
+          <div class="kpi-icon-box" style="background:#fef3c7; color:#d97706"><i class="bi bi-clock-history"></i></div>
+          <div><div class="text-muted small">En Progreso</div><div class="fw-bold fs-5" id="kpiEnProgreso">--</div></div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="card-custom d-flex flex-row align-items-center gap-3">
+          <div class="kpi-icon-box" style="background:#dcfce7; color:#16a34a"><i class="bi bi-check-lg"></i></div>
+          <div><div class="text-muted small">Completados</div><div class="fw-bold fs-5" id="kpiCompletados">--</div></div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="card-custom d-flex flex-row align-items-center gap-3">
+          <div class="kpi-icon-box" style="background:#fee2e2; color:#dc2626"><i class="bi bi-cash-coin"></i></div>
+          <div><div class="text-muted small">Saldo Pendiente</div><div class="fw-bold fs-5" id="kpiSaldoPendiente">--</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 mb-3">
+      <div class="flex-grow-1" style="min-width:220px;">
+        <div class="input-group">
+          <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+          <input type="text" class="form-control border-start-0" id="filtroTratBusqueda" placeholder="Buscar por paciente, tratamiento o dentista..." autocomplete="off" aria-label="Buscar tratamientos de pacientes">
+        </div>
+      </div>
+      <select class="form-select" id="filtroTratEstado" style="max-width:200px;" autocomplete="off" aria-label="Filtrar por estado">
+        <option value="">Todos los estados</option>
+        <option>En Progreso</option>
+        <option>Completado</option>
+      </select>
+      <select class="form-select" id="ordenTrat" style="max-width:180px;" autocomplete="off" aria-label="Ordenar tratamientos">
+        <option value="recientes">Más recientes</option>
+        <option value="antiguos">Más antiguos</option>
+      </select>
+      <!-- [BACKEND] Abre modal Asignar -> al guardar: POST /tratamientos/pacientes -->
+      <button class="btn btn-teal" onclick="prepararModalAsignar()" data-bs-toggle="modal" data-bs-target="#modalAsignar">
+        <i class="bi bi-plus-lg"></i> Asignar
+      </button>
+    </div>
+
+    <div class="card-custom">
+      <div class="table-responsive">
+        <table class="table patients-table mb-0">
+          <thead>
+            <tr>
+              <th>Paciente</th><th>Tratamiento</th><th>Dentista</th><th>Progreso</th>
+              <th>Próxima Cita</th>
+              <th>Estado</th><th>Costo</th><th>Pendiente</th><th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyTratamientos"></tbody>
+        </table>
+        <div class="empty-state d-none" id="tratPacientesEmptyState">
+          <i class="bi bi-clipboard2-pulse"></i>
+          <div>No hay tratamientos asignados a pacientes</div>
+          <div class="small-note">Fuente: tabla "tratamientos_pacientes" (GET /tratamientos/pacientes)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ============================================================ -->
+<!-- MODAL: NUEVO / EDITAR SERVICIO DEL CATÁLOGO -->
+<!-- [BACKEND] Nuevo -> POST /tratamientos/catalogo | Editar -> PUT /tratamientos/catalogo/:id -->
+<!-- ============================================================ -->
+<div class="modal fade" id="modalServicio" tabindex="-1">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold mb-0" id="modalServicioTitulo">Nuevo Tratamiento</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formServicio">
+            <input type="hidden" name="servicioId">
+            <div class="mb-3">
+              <label class="form-label small fw-semibold" for="servNombre">Nombre del Tratamiento *</label>
+              <input type="text" class="form-control" id="servNombre" name="nombre" placeholder="Ej: Blanqueamiento Dental" required autocomplete="off">
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold" for="servCategoria">Categoría *</label>
+              <select class="form-select" id="servCategoria" name="categoria" required autocomplete="off">
+                <option value="">Seleccionar categoría</option>
+                <option value="Preventivo">Preventivo</option>
+                <option value="Restaurativo">Restaurativo</option>
+                <option value="Estetico">Estético</option>
+                <option value="Cirugia">Cirugía</option>
+                <option value="Ortodoncia">Ortodoncia</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold" for="servDescripcion">Descripción</label>
+              <textarea class="form-control" id="servDescripcion" name="descripcion" rows="2" placeholder="Breve descripción del tratamiento" autocomplete="off"></textarea>
+            </div>
+            <div class="row g-3">
+              <div class="col-6">
+                <label class="form-label small fw-semibold" for="servDuracion">Duración (minutos) *</label>
+                <input type="number" class="form-control" id="servDuracion" name="duracionMin" min="5" step="5" placeholder="Ej: 60" required autocomplete="off">
+              </div>
+              <div class="col-6">
+                <label class="form-label small fw-semibold" for="servPrecio">Precio *</label>
+                <div class="input-group">
+                  <span class="input-group-text">$</span>
+                  <input type="number" class="form-control" id="servPrecio" name="precio" placeholder="0.00" min="0" step="0.01" required autocomplete="off">
+                </div>
+              </div>
+            </div>
+          </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-soft" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="formServicio" class="btn btn-teal" id="btnGuardarServicio">Agregar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- MODAL: ASIGNAR TRATAMIENTO A PACIENTE -->
+<!-- [BACKEND] Al enviar -> POST /tratamientos/pacientes -->
+<!-- El select "Tratamiento" se llena dinámicamente desde el catálogo (populateSelectTratamientos) -->
+<!-- ============================================================ -->
+<div class="modal fade" id="modalAsignar" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold mb-0">Asignar Tratamiento a Paciente</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formAsignar">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold" for="selectPacienteAsignar">Paciente *</label>
+              <!-- [BACKEND] GET /api/admin/citas/catalogos/pacientes.php (reutilizado) -->
+              <select class="form-select" name="pacienteId" id="selectPacienteAsignar" required autocomplete="off">
+                <option value="">Cargando pacientes...</option>
+              </select>
+            </div>
+           <div class="col-md-6">
+              <label class="form-label small fw-semibold" for="selectTratamientoAsignar">Tratamiento *</label>
+              <select class="form-select" name="servicioId" id="selectTratamientoAsignar" required autocomplete="off">
+                <option value="">Seleccionar tratamiento</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold" for="selectDoctorAsignar">Dentista Asignado *</label>
+              <!-- [BACKEND] GET /api/admin/citas/catalogos/doctores.php (reutilizado) -->
+              <select class="form-select" name="doctorId" id="selectDoctorAsignar" required autocomplete="off">
+                <option value="">Cargando odontólogos...</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold" for="asignarFechaInicio">Fecha de Inicio *</label>
+              <input type="date" class="form-control" id="asignarFechaInicio" name="fechaInicio" required autocomplete="off">
+            </div>
+            
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold" for="asignarHoraInicio">Hora de Inicio *</label>
+              <input type="time" class="form-control" id="asignarHoraInicio" name="horaInicio" min="08:00" max="20:59" required autocomplete="off">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold" for="asignarSesiones">Número de Sesiones *</label>
+              <input type="number" class="form-control" id="asignarSesiones" name="sesionesTotal" min="1" value="1" required autocomplete="off">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold" for="asignarCosto">Costo Total</label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input type="number" class="form-control" id="asignarCosto" name="costoTotal" placeholder="0.00" min="0" step="0.01" autocomplete="off">
+              </div>
+            </div>
+            <div class="col-md-12">
+              <label class="form-label small fw-semibold" for="asignarPagoInicial">Pago Inicial (opcional)</label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input type="number" class="form-control" id="asignarPagoInicial" name="pagoInicial" placeholder="0.00" min="0" step="0.01" autocomplete="off">
+              </div>
+              <div class="form-text">Si el paciente realiza un pago inicial, ingrésalo aquí</div>
+            </div>
+            <div class="col-md-12">
+              <label class="form-label small fw-semibold" for="asignarDiagnostico">Diagnóstico *</label>
+              <textarea class="form-control" id="asignarDiagnostico" name="diagnostico" rows="2" placeholder="Describe el diagnóstico del paciente..." required autocomplete="off"></textarea>
+            </div>
+            <div class="col-md-12">
+              <label class="form-label small fw-semibold" for="asignarNotas">Notas Adicionales (opcional)</label>
+              <textarea class="form-control" id="asignarNotas" name="notas" rows="2" placeholder="Instrucciones especiales, observaciones, etc..." autocomplete="off"></textarea>
+            </div>
+
+            <div class="col-md-12"><hr class="my-2"></div>
+
+            <div class="col-md-12">
+              <h6 class="fw-bold mb-1"><i class="bi bi-file-earmark-text" style="color:var(--teal)"></i> Consentimiento Informado</h6>
+              <div class="text-muted small mb-2">El paciente deberá firmar este documento antes de que puedas marcar cualquier cita de este tratamiento como completada.</div>
+            </div>
+            <div class="col-md-12">
+              <label class="form-label small fw-semibold" for="asignarPlantillaConsentimiento">Plantilla de partida</label>
+              <select class="form-select" id="asignarPlantillaConsentimiento" autocomplete="off">
+                <option value="personalizado">Personalizado (escribir desde cero)</option>
+              </select>
+              <div class="form-text">Se sugiere automáticamente según el tratamiento elegido — puedes cambiarla o editar el texto libremente.</div>
+            </div>
+            <div class="col-md-12">
+              <label class="form-label small fw-semibold" for="asignarConsentimientoTitulo">Título del documento *</label>
+              <input type="text" class="form-control" id="asignarConsentimientoTitulo" required autocomplete="off">
+            </div>
+            <div class="col-md-12">
+              <label class="form-label small fw-semibold" for="asignarConsentimientoTexto">Texto del consentimiento *</label>
+              <textarea class="form-control" id="asignarConsentimientoTexto" rows="6" required autocomplete="off"></textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-soft" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="formAsignar" class="btn btn-teal">Asignar Tratamiento</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalDetalleTratamiento" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title fw-bold mb-0" id="detTratPaciente">--</h5>
+          <div class="text-muted small" id="detTratNombre">--</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-6">
+            <div class="text-muted small">Dentista</div>
+            <div class="fw-semibold" id="detTratDentista">--</div>
+          </div>
+          <div class="col-6">
+            <div class="text-muted small">Estado</div>
+            <div><span class="status-badge" id="detTratEstadoBadge">--</span></div>
+          </div>
+          <div class="col-12">
+            <div class="text-muted small mb-1">Progreso</div>
+            <div class="small mb-1" id="detTratProgresoTexto">--</div>
+            <div class="progress-mini"><div class="bar" id="detTratProgresoBarra" style="width:0%"></div></div>
+          </div>
+          <div class="col-6">
+            <div class="text-muted small">Costo Total</div>
+            <div class="fw-semibold" id="detTratCosto">--</div>
+          </div>
+          <div class="col-6">
+            <div class="text-muted small">Saldo Pendiente</div>
+            <div class="fw-semibold" id="detTratPendiente">--</div>
+          </div>
+          <div class="col-12">
+            <div class="text-muted small">Próxima Cita</div>
+            <div class="fw-semibold" id="detTratProximaCita">--</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-soft" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalAgendarSesion" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title fw-bold mb-0">Agendar Siguiente Sesión</h5>
+          <div class="text-muted small" id="agendarSesionSubtitulo">--</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formAgendarSesion">
+          <input type="hidden" name="tratamientoId">
+          <input type="hidden" name="pacienteId">
+          <input type="hidden" name="servicioId">
+          <div class="row g-3">
+            <div class="col-md-12">
+              <label class="form-label small fw-semibold" for="agendarDoctor">Odontólogo *</label>
+              <select class="form-select" name="doctorId" id="agendarDoctor" required autocomplete="off">
+                <option value="">Seleccionar odontólogo</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold" for="agendarFecha">Fecha *</label>
+              <input type="date" class="form-control" id="agendarFecha" name="fecha" required autocomplete="off">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold" for="agendarHora">Hora *</label>
+              <input type="time" class="form-control" id="agendarHora" name="hora" min="08:00" max="20:59" required autocomplete="off">
+            </div>
+            <div class="col-md-12">
+              <label class="form-label small fw-semibold" for="agendarNotas">Notas</label>
+              <textarea class="form-control" id="agendarNotas" name="notas" rows="2" placeholder="Información adicional sobre la cita..." autocomplete="off"></textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-soft" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="formAgendarSesion" class="btn btn-teal">Agendar Sesión</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../scripts/components/admin-sidebar.js"></script>
+
+<!-- Cada módulo del admin vive en su propio archivo -->
+<script src="../scripts/components/admin-sesion.js"></script>
+<script src="../scripts/components/admin-notificaciones.js"></script>
+<script src="../scripts/components/admin-tratamientos.js"></script>
+
+</body>
+</html>

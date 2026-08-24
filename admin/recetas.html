@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <title>DentalCare - Recetas Médicas</title>
+    <link rel="stylesheet" href="../styles/portal.css">
+    <script src="../scripts/components/admin-head-loader.js"></script>    <style>
+      .kpi-rec{ background:#fff; border:1px solid var(--border); border-radius:14px; padding:1rem 1.1rem; height:100%; display:flex; align-items:center; gap:0.8rem; }
+      .kpi-rec .icon-round{ width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
+      .kpi-rec .val{ font-size:1.35rem; font-weight:700; }
+      .kpi-rec .lbl{ font-size:0.78rem; color:#475569; }
+
+      .tabs-rec .btn{ font-size:0.83rem; }
+
+      .receta-item-mini{ display:flex; align-items:center; gap:0.75rem; padding:0.75rem 0; border-bottom:1px solid var(--border); }
+      .receta-item-mini:last-child{ border-bottom:none; }
+      .receta-icon{ width:34px; height:34px; border-radius:9px; background:var(--teal-light); color:var(--teal-dark); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+
+      .estado-row-rec{ margin-bottom:0.85rem; }
+      .estado-row-rec .lbl-row{ display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:0.3rem; }
+      .dot-rec{ width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:6px; }
+      .bar-track-rec{ height:6px; border-radius:10px; background:#eef2f6; }
+      .bar-fill-rec{ height:100%; border-radius:10px; }
+
+      .med-chip{ font-size:0.8rem; color:#475569; padding:0.35rem 0; display:flex; align-items:center; gap:0.4rem; }
+
+      .status-activa{ background:#dcfce7; color:#16a34a; }
+      .status-completada{ background:#dbeafe; color:#2563eb; }
+      .status-vencida{ background:#fee2e2; color:#dc2626; }
+
+      .receta-row{ display:flex; align-items:center; gap:0.9rem; padding:0.85rem 0; border-bottom:1px solid var(--border); }
+      .receta-row:last-child{ border-bottom:none; }
+
+      .med-block{ border:1px solid var(--border); border-radius:12px; padding:0.9rem 1rem; margin-bottom:0.8rem; background:var(--bg); }
+      .med-block-title{ color:var(--teal-dark); font-weight:700; font-size:0.75rem; letter-spacing:.03em; text-transform:uppercase; margin-bottom:0.6rem; }
+
+      /* Vista imprimible de una receta individual -- oculta en pantalla */
+      #recetaImprimirArea{ display:none; }
+      @media print {
+        dental-sidebar, .top-header, .tabs-rec, .btn, .action-icon { display:none !important; }
+        .main-content > *:not(#recetaImprimirArea) { display:none !important; }
+        #recetaImprimirArea{ display:block !important; max-width:700px; margin:0 auto; font-family:Arial,sans-serif; }
+        .pr-medicamento{ border:1px solid #ccc; border-radius:6px; padding:0.6rem 0.8rem; margin-bottom:0.5rem; }
+      }
+</style>
+</head>
+
+<body>
+
+<!--
+  ==========================================================
+  MÓDULO RECETAS — DATOS MOCK + FLUJO EN MEMORIA
+  2 pestañas: Resumen, Todas las Recetas.
+  Mismo patrón que los otros módulos. Busca los comentarios [BACKEND].
+  ==========================================================
+-->
+
+<dental-sidebar></dental-sidebar>
+
+<div class="main-content">
+
+  <div class="top-header">
+    <h4>Recetas Médicas</h4>
+    <div class="d-flex align-items-center gap-3">
+      <dental-notificaciones></dental-notificaciones>
+      <div class="d-flex align-items-center gap-2">
+        <span class="text-muted small" id="adminNombre">Cargando...</span>
+        <div class="avatar-sm" id="adminAvatarInicial">–</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+      <h5 class="fw-bold mb-0">Recetas Médicas</h5>
+      <div class="section-sub text-muted small" id="subtituloRecetas">-- recetas activas &middot; -- total</div>
+    </div>
+    <!-- [BACKEND] Abre modal Nueva Receta -> al guardar: POST /recetas -->
+    <button class="btn btn-teal" onclick="prepararModalReceta()">
+      <i class="bi bi-plus-lg"></i> Nueva Receta
+    </button>
+  </div>
+
+  <div class="btn-group tabs-rec mb-3" role="group">
+    <button class="btn btn-teal" id="tabResumenRec"><i class="bi bi-bar-chart"></i> Resumen</button>
+    <button class="btn btn-outline-soft" id="tabTodasRec"><i class="bi bi-file-medical"></i> Todas las Recetas</button>
+  </div>
+
+  <!-- ===================== TAB: RESUMEN ===================== -->
+  <!-- [BACKEND] GET /recetas/resumen -->
+  <div id="vistaResumenRec">
+    <div class="row g-3 mb-3">
+      <div class="col-6 col-lg-3"><div class="kpi-rec"><div class="icon-round" style="background:var(--teal-light); color:var(--teal-dark)"><i class="bi bi-file-medical"></i></div><div><div class="val" id="kpiRecetasActivas">--</div><div class="lbl">Recetas Activas</div></div></div></div>
+      <div class="col-6 col-lg-3"><div class="kpi-rec"><div class="icon-round" style="background:var(--teal-light); color:var(--teal-dark)"><i class="bi bi-calendar-check"></i></div><div><div class="val" id="kpiEmitidasMes">--</div><div class="lbl">Emitidas este mes</div></div></div></div>
+      <div class="col-6 col-lg-3"><div class="kpi-rec"><div class="icon-round" style="background:#ede9fe; color:#7c3aed"><i class="bi bi-people"></i></div><div><div class="val" id="kpiPacientesAtendidos">--</div><div class="lbl">Pacientes atendidos</div></div></div></div>
+      <div class="col-6 col-lg-3"><div class="kpi-rec"><div class="icon-round" style="background:#fee2e2; color:#dc2626"><i class="bi bi-capsule"></i></div><div><div class="val" id="kpiTotalMedicamentos">--</div><div class="lbl">Total medicamentos</div></div></div></div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-lg-8">
+        <div class="card-custom">
+          <h6 class="fw-bold mb-2">Recetas Activas Recientes</h6>
+          <div id="recetasRecientesContainer"></div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="card-custom">
+          <h6 class="fw-bold mb-3">Estado de Recetas</h6>
+          <div id="estadoRecetasContainer"></div>
+
+          <div class="text-muted small fw-semibold mt-3 mb-2">Medicamentos más prescritos</div>
+          <div id="medicamentosTopContainer"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== TAB: TODAS LAS RECETAS ===================== -->
+  <!-- [BACKEND] GET /recetas?buscar=&estado= -->
+  <div id="vistaTodasRec" class="d-none">
+    <div class="d-flex flex-wrap gap-2 mb-3">
+      <div class="flex-grow-1" style="min-width:240px;">
+        <div class="input-group">
+          <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+          <input type="text" class="form-control border-start-0" id="filtroRecBusqueda" placeholder="Buscar por paciente, número o diagnóstico...">
+        </div>
+      </div>
+      <select class="form-select" id="filtroRecEstado" style="max-width:200px;">
+        <option value="">Todos los estados</option>
+        <option value="activa">Activa</option>
+        <option value="completada">Completada</option>
+        <option value="vencida">Vencida</option>
+      </select>
+      <button class="btn btn-teal" onclick="prepararModalReceta()"><i class="bi bi-plus-lg"></i> Nueva Receta</button>
+    </div>
+
+    <div class="card-custom">
+      <div id="listaRecetasContainer"></div>
+    </div>
+  </div>
+  <!-- ===================== ZONA IMPRIMIBLE (solo visible al imprimir) ===================== -->
+  <div id="recetaImprimirArea">
+    <div style="display:flex; justify-content:space-between; border-bottom:2px solid #0d9488; padding-bottom:1rem; margin-bottom:1rem;">
+      <div>
+        <h3 style="margin:0; color:#0d9488;">DentalCare</h3>
+        <div style="font-size:0.85rem; color:#555;">Receta Médica</div>
+      </div>
+      <div style="text-align:right; font-size:0.85rem;">
+        <div><strong id="prFolio"></strong></div>
+        <div id="prFecha"></div>
+      </div>
+    </div>
+    <div style="margin-bottom:1rem; font-size:0.92rem;">
+      <div><strong>Paciente:</strong> <span id="prPaciente"></span></div>
+      <div><strong>Doctor:</strong> <span id="prDoctor"></span></div>
+      <div><strong>Diagnóstico:</strong> <span id="prDiagnostico"></span></div>
+      <div id="prMotivoWrap"><strong>Motivo de consulta:</strong> <span id="prMotivo"></span></div>
+    </div>
+    <div id="prMedicamentos"></div>
+    <div id="prIndicacionesWrap" style="margin-top:1rem; font-size:0.92rem;"><strong>Indicaciones generales:</strong><div id="prIndicaciones"></div></div>
+    <div id="prProximaCitaWrap" style="margin-top:1rem; font-size:0.92rem;"><strong>Próxima cita:</strong> <span id="prProximaCita"></span></div>
+    <div style="margin-top:3rem; text-align:center;">
+      <div style="border-top:1px solid #333; width:250px; margin:0 auto; padding-top:0.5rem; font-size:0.85rem;">Firma del odontólogo</div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ============================================================ -->
+<!-- MODAL: NUEVA RECETA MÉDICA -->
+<!-- [BACKEND] POST /recetas -->
+<!-- ============================================================ -->
+<div class="modal fade" id="modalReceta" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold mb-0" id="modalRecetaTitulo"><i class="bi bi-file-medical" style="color:var(--teal-dark)"></i> Nueva Receta Médica</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formReceta">
+          <input type="hidden" name="recetaId">
+          <div class="mb-3">
+          <label class="form-label small fw-semibold" for="selectPacienteReceta">Paciente *</label>            <!-- [BACKEND] GET /api/admin/citas/catalogos/pacientes.php (se reutiliza el mismo catálogo) -->
+          <select class="form-select" name="pacienteId" id="selectPacienteReceta" required> ... </select>              <option value="">Cargando pacientes...</option>
+            </select>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Diagnóstico *  <input type="text" class="form-control" name="diagnostico" required></label>
+                <input type="text" class="form-control" name="diagnostico" id="inputDiagnostico" placeholder="Ej. Pulpitis irreversible pieza 16" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold" for="inputMotivo">Motivo de consulta</label>
+              <input type="text" class="form-control" name="motivo" id="inputMotivo" placeholder="Ej. Dolor intenso e inflamación">
+            </div>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="form-label small fw-semibold mb-0">Medicamentos *</div>
+            <a href="#" class="link-teal" id="btnAgregarMedicamento"><i class="bi bi-plus-lg"></i> Agregar medicamento</a>
+          </div>
+          <div id="medicamentosContainer"></div>
+
+          <div class="row g-3 mt-1">
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold" for="inputIndicaciones">Indicaciones generales</label>
+              <textarea class="form-control" name="indicaciones" id="inputIndicaciones" rows="2" placeholder="Cuidados en casa, dieta, reposo..."></textarea>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold" for="inputProximaCita">Próxima cita</label>
+              <input type="date" class="form-control" name="proximaCita" id="inputProximaCita">
+            </div>
+          </div>
+
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-soft" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="formReceta" class="btn btn-teal" id="btnGuardarReceta"><i class="bi bi-save"></i> Crear Receta</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalVerMedicamentos" tabindex="-1">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title fw-bold mb-0" id="verMedFolio">--</h5>
+          <div class="text-muted small" id="verMedPaciente">--</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="verMedContainer"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-soft" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../scripts/components/admin-sidebar.js"></script>
+<script src="../scripts/components/admin-sesion.js"></script>
+<script src="../scripts/components/admin-notificaciones.js"></script>
+<script src="../scripts/components/admin-recetas.js"></script>
+
+</body>
+</html>
