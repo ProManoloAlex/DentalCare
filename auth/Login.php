@@ -7,13 +7,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema Odontológico - Gestión Integral de Clínica Dental</title>
 
+    <!-- Conexión anticipada a los CDNs: el navegador no espera a leer
+         cada <link> para empezar a conectar, ayuda al primer render -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Remixicon -->
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css" rel="stylesheet">
-
-    <!-- FontAwesome -->
+    <!-- FontAwesome (se quitó Remixicon: no se usaba en esta página, solo duplicaba peso) -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 
     <!-- Google Fonts -->
@@ -61,7 +65,7 @@
                 <?php if ($resetExitoso): ?>
                 <div class="alert alert-success">Tu contraseña se actualizó. Ya puedes iniciar sesión.</div>
                 <?php endif; ?>
-                    <form action="LogeoUsuario.php" method="POST">
+                    <form id="form-login" action="LogeoUsuario.php" method="POST">
                         <div class="mb-3">
                             <label for="login-correo" class="form-label fw-semibold">Correo Electrónico</label>
                             <input type="email" id="login-correo" name="correo" class="form-control py-2 rounded-3 focus-teal" placeholder="correo@ejemplo.com" required>
@@ -108,9 +112,24 @@
         </div>
     </div>
 
+    <!-- Modal de aviso (reemplaza el alert() nativo de LogeoUsuario.php) -->
+    <div class="modal fade" id="modalAvisoLogin" tabindex="-1" aria-labelledby="modalAvisoLoginTitulo" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4">
+                <div class="modal-body text-center p-4">
+                    <i id="modalAvisoLoginIcono" class="fa-solid fa-circle-check text-success fs-1 mb-2"></i>
+                    <h5 id="modalAvisoLoginTitulo" class="fw-bold mb-2">Éxito</h5>
+                    <p id="modalAvisoLoginMensaje" class="text-muted mb-3">Mensaje</p>
+                    <button type="button" class="btn bg-teal-custom text-white px-4" data-bs-dismiss="modal">Entendido</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script src="../scripts/components/auth-tabs.js"></script>
+    <script src="../scripts/components/auth-login.js"></script>
 </body>
 
 </html>

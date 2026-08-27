@@ -482,25 +482,9 @@ el valor real con el color de marca. */
 /* ==========================================================
   NUEVO: clases que usa citas.html — estados de cita, tabla
   del calendario semanal, y fila apagada para citas canceladas.
+  (.status-confirmada y .status-pendiente ya no se repiten aquí:
+  eran idénticas a las del bloque del dashboard, arriba)
   ========================================================== */
-.status-confirmada{ 
-  background:#dcfce7;
-  color:#15803d;
-  font-size:0.68rem;
-  font-weight:700;
-  padding:0.25rem 0.55rem;
-  border-radius:999px;
-}
-
-.status-pendiente{ 
-  background:#fef9c3; 
-  color:#a16207; 
-  font-size:0.68rem; 
-  font-weight:700; 
-  padding:0.25rem 0.55rem; 
-  border-radius:999px; 
-}
-
 .status-completada{ 
   background:#dbeafe; 
   color:#1d4ed8; 
