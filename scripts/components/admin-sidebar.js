@@ -6,7 +6,12 @@ class DentalSidebar extends HTMLElement {
     const currentFolder = pathArray.pop();                // Ej: "admin" o "cliente"
 
     this.innerHTML = `
-      <aside class="sidebar">
+      <button type="button" class="sidebar-toggle-btn" id="btnSidebarToggle" aria-label="Abrir menú">
+        <i class="bi bi-list"></i>
+      </button>
+      <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+      <aside class="sidebar" id="sidebarAside">
         <div class="d-flex align-items-center gap-2 px-1 mb-4">
           <div class="brand-icon"><i class="bi bi-shield-fill-check"></i></div>
           <div>
@@ -61,6 +66,27 @@ class DentalSidebar extends HTMLElement {
         </a>
       </aside>
     `;
+
+    // 2. Menú hamburguesa: solo tiene efecto visual en celular (el botón y el
+    // fondo oscuro están ocultos en escritorio vía CSS), pero el listener
+    // no hace daño si está montado siempre.
+    const boton = this.querySelector('#btnSidebarToggle');
+    const fondo = this.querySelector('#sidebarBackdrop');
+    const aside = this.querySelector('#sidebarAside');
+
+    const abrir = () => { aside.classList.add('open'); fondo.classList.add('show'); };
+    const cerrar = () => { aside.classList.remove('open'); fondo.classList.remove('show'); };
+
+    boton.addEventListener('click', () => {
+      aside.classList.contains('open') ? cerrar() : abrir();
+    });
+    fondo.addEventListener('click', cerrar);
+
+    // Al tocar un link del menú en celular, se cierra solo (si no,
+    // el usuario navega a la nueva página con el sidebar tapando todo)
+    this.querySelectorAll('.nav-link-custom').forEach((link) => {
+      link.addEventListener('click', cerrar);
+    });
   }
 }
 

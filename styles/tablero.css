@@ -603,3 +603,64 @@ el valor real con el color de marca. */
   background: #fff7ed;
   border-left: 3px solid #f59e0b;
 }
+/* ==========================================================
+   NUEVO: responsive de celular para el admin. El sidebar era
+   fijo con margin-left:230px sin ningún @media — en pantallas
+   chicas eso dejaba al contenido con ~145px de ancho real.
+   Ahora el sidebar se oculta fuera de pantalla y se despliega
+   con el botón hamburguesa (lógica en admin-sidebar.js).
+   ========================================================== */
+
+.sidebar-toggle-btn{
+  display:none; /* solo aparece en celular, ver @media abajo */
+  position:fixed;
+  top:14px; left:14px;
+  z-index:1050;
+  width:40px; height:40px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:#fff;
+  color:var(--teal-dark);
+  align-items:center; justify-content:center;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+.sidebar-backdrop{
+  display:none;
+  position:fixed; inset:0;
+  background:rgba(15,23,42,.45);
+  z-index:1039;
+}
+.sidebar-backdrop.show{ display:block; }
+
+@media (max-width: 991.98px){
+  .sidebar-toggle-btn{ display:flex; }
+
+  .sidebar{
+    left:-260px;
+    transition:left .25s ease;
+    z-index:1040;
+    box-shadow:2px 0 12px rgba(0,0,0,.08);
+  }
+  .sidebar.open{ left:0; }
+
+  .main-content{
+    margin-left:0;
+    padding: 1.25rem 1rem;
+    padding-top: 4.25rem; /* deja espacio para no chocar con el botón hamburguesa */
+  }
+
+  .top-header{
+    flex-wrap:wrap;
+    row-gap:0.6rem;
+  }
+}
+
+@media (max-width: 575.98px){
+  .card-custom{
+    padding: 0.9rem 1rem;
+  }
+  .stat-value{
+    font-size:1.35rem;
+  }
+}
