@@ -1,0 +1,139 @@
+/* Estilos propios del módulo Citas — el resto (variables, .card-custom,
+   .btn-teal, .patients-table, etc.) viene de tablero.css, que se carga
+   antes que este archivo en citas.html */
+
+.view-toggle .btn {
+  font-size: 0.85rem;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.cal-nav-btn {
+  width: 32px; height: 32px; border: 1px solid var(--border); background: #fff; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center; color: #475569;
+  transition: all 0.3s ease;
+}
+
+.cal-nav-btn:hover {
+  background: var(--teal-light);
+  border-color: var(--teal);
+  color: var(--teal-dark);
+}
+
+.cal-legend-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+
+table.calendar-table { border-collapse: collapse; width: 100%; font-size: 0.78rem; }
+table.calendar-table th, table.calendar-table td {
+  border: 1px solid var(--border); padding: 0.4rem; vertical-align: top; min-width: 110px; height: 52px;
+}
+table.calendar-table th { background: #fbfcfd; text-align: center; font-weight: 600; color: #475569; }
+table.calendar-table th.today-col { color: var(--teal-dark); background: var(--teal-light); }
+
+/* Días desactivados en Configuración → Clínica → Horarios */
+table.calendar-table th.dia-cerrado { background: #f1f5f9; color: #94a3b8; }
+table.calendar-table th.dia-cerrado .cerrado-tag {
+  font-size: 0.62rem; font-weight: 600; text-transform: uppercase; letter-spacing: .03em;
+  color: #94a3b8; margin-top: 2px;
+}
+table.calendar-table td.cal-slot.slot-cerrado {
+  background: repeating-linear-gradient(45deg, #f8fafc, #f8fafc 8px, #f1f5f9 8px, #f1f5f9 16px);
+}
+/* Horas fuera del horario configurado para ese día (pero el día sí abre) */
+table.calendar-table td.cal-slot.slot-fuera-horario { background: #fbfbfc; }
+table.calendar-table td.hour-col { text-align: right; color: var(--text-muted); border: none; font-size: 0.75rem; white-space: nowrap; min-width: 60px; }
+
+.list-filters select, .list-filters input { font-size: 0.83rem; }
+td.cancelada .cal-event, tr.cancelada { opacity: 0.55; }
+
+/* .status-confirmada/.pendiente/.completada/.cancelada NO se repiten aquí:
+   ya existen en tablero.css y este bloque traía los mismos colores
+   ligeramente distintos (ej. #16a34a aquí vs #15803d en tablero.css)
+   — justo el tipo de inconsistencia que separar bien evita.
+   Si el tono de aquí te gusta más, ajústalo UNA vez en tablero.css
+   y listo, se refleja en todos los módulos que usan esos badges. */
+
+/* .cal-event se deja aquí SOLO como versión reforzada (hover con
+   transform + sombra) para la vista de calendario, por eso se escribe
+   con este prefijo: no pisa el .cal-event genérico de tablero.css
+   que puede estar usándose en otras vistas (p. ej. el resumen del
+   Tablero) */
+#tablaCalendario .cal-event {
+  border-radius: 6px; padding: 2px 6px; font-size: 0.68rem; color: #fff; cursor: pointer;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+#tablaCalendario .cal-event:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Botón Nueva Cita — mismo padding/radius/sombra que .view-toggle .btn-teal
+   para que los 3 botones (Calendario, Lista, Nueva Cita) se vean como un mismo set */
+.btn-nueva-cita {
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+  color: #fff !important;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(13, 148, 136, 0.25);
+}
+.btn-nueva-cita:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(13, 148, 136, 0.35);
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+  color: #fff !important;
+}
+.btn-nueva-cita:active { transform: translateY(0px); }
+.btn-nueva-cita i { margin-right: 8px; }
+
+.view-toggle .btn-teal {
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+  color: white;
+  border: none;
+  box-shadow: 0 2px 10px rgba(13, 148, 136, 0.25);
+}
+.view-toggle .btn-teal:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(13, 148, 136, 0.35);
+}
+.view-toggle .btn-outline-soft {
+  background: white;
+  color: #475569;
+  border: 2px solid #e2e8f0;
+}
+.view-toggle .btn-outline-soft:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+
+/* Modal de este módulo con look propio (más redondeado que el default) */
+#modalCita .modal-content {
+  border-radius: 16px;
+  border: none;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+}
+#modalCita .modal-header {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 16px 16px 0 0;
+  border-bottom: 2px solid #e2e8f0;
+}
+#modalCita .modal-footer {
+  background: #f8fafc;
+  border-radius: 0 0 16px 16px;
+  border-top: 2px solid #e2e8f0;
+}
+
+/* Celular: la tabla del calendario ya va envuelta en .table-responsive
+   en el HTML, así que hace scroll horizontal en vez de romper el layout.
+   Aquí solo se angostan un poco las columnas para que quepan más días
+   visibles antes de tener que hacer scroll. */
+@media (max-width: 576px) {
+  table.calendar-table th, table.calendar-table td {
+    min-width: 88px;
+  }
+}

@@ -1,0 +1,56 @@
+/* Estilos propios del módulo DentalCare - Configuración — el resto (variables, .card-custom,
+   .btn-teal, .patients-table, etc.) viene de tablero.css */
+
+.config-subnav-item{
+        display:flex; align-items:center; gap:0.6rem; padding:0.7rem 0.8rem; border-radius:10px;
+        cursor:pointer; margin-bottom:6px; background:#fff; border:1px solid var(--border);
+      }
+      .config-subnav-item:hover{ border-color:var(--teal); }
+      .config-subnav-item.active{ background:var(--teal-light); border-color:var(--teal); }
+      .config-subnav-icon{ width:32px; height:32px; border-radius:8px; background:#eef2f6; color:#475569; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+      .config-subnav-item.active .config-subnav-icon{ background:var(--teal); color:#fff; }
+      .config-subnav-item .lbl{ font-weight:600; font-size:0.85rem; }
+
+      .help-box{ background:var(--teal-light); border-radius:12px; padding:1rem; display:flex; gap:0.7rem; }
+      .help-box .icon-round{ width:32px; height:32px; border-radius:8px; background:var(--teal); color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+
+      .section-header-config{ display:flex; align-items:center; gap:0.7rem; margin-bottom:1rem; }
+      .section-header-config .icon-round{ width:38px; height:38px; border-radius:10px; background:var(--teal); color:#fff; display:flex; align-items:center; justify-content:center; }
+
+      .config-card{ background:#fff; border:1px solid var(--border); border-radius:14px; padding:1.1rem 1.25rem; margin-bottom:1rem; }
+      .config-card h6{ font-weight:700; margin-bottom:0.9rem; display:flex; align-items:center; gap:0.5rem; }
+
+      .switch-cfg{ width:38px; height:22px; border-radius:20px; position:relative; cursor:pointer; transition:0.2s; flex-shrink:0; display:inline-block; }
+      .switch-cfg.on{ background:var(--teal); }
+      .switch-cfg.off{ background:#cbd5e1; }
+      .switch-cfg .knob{ width:18px; height:18px; border-radius:50%; background:#fff; position:absolute; top:2px; transition:0.2s; }
+      .switch-cfg.on .knob{ left:18px; }
+      .switch-cfg.off .knob{ left:2px; }
+
+      .horario-row{ display:flex; align-items:center; gap:1rem; padding:0.5rem 0; }
+      .horario-row .dia-label{ width:90px; font-size:0.85rem; }
+
+      .doctor-row{ display:flex; align-items:center; gap:0.75rem; padding:0.75rem 0; border-bottom:1px solid var(--border); }
+      .doctor-row:last-child{ border-bottom:none; }
+      .doctor-avatar{ width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:0.8rem; }
+      .role-badge{ font-size:0.68rem; font-weight:600; padding:0.1rem 0.5rem; border-radius:6px; background:var(--teal-light); color:var(--teal-dark); }
+      .role-badge.inactivo{ background:#f1f5f9; color:#64748b; }
+
+      .modulo-check{ background:var(--teal-light); color:var(--teal-dark); border-radius:8px; padding:0.5rem 0.8rem; font-size:0.82rem; font-weight:600; display:flex; align-items:center; gap:0.4rem; }
+
+      .notif-evento{ font-weight:600; font-size:0.83rem; }
+      .notif-desc{ font-size:0.75rem; color:var(--text-muted); }
+
+      .alert-interna-row{ display:flex; justify-content:space-between; align-items:center; padding:0.7rem 0; border-bottom:1px solid var(--border); }
+      .alert-interna-row:last-child{ border-bottom:none; }
+
+      .sesion-row{ display:flex; align-items:center; gap:0.7rem; padding:0.6rem 0; border-bottom:1px solid var(--border); }
+      .sesion-row:last-child{ border-bottom:none; }
+      .sesion-dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+      .sesion-badge{ font-size:0.68rem; font-weight:600; padding:0.15rem 0.55rem; border-radius:20px; }
+      .sesion-badge.activa{ background:#dcfce7; color:#16a34a; }
+      .sesion-badge.cerrada{ background:#f1f5f9; color:#64748b; }
+
+      .activity-row{ display:flex; align-items:center; gap:0.75rem; padding:0.6rem 0; border-bottom:1px solid var(--border); }
+      .activity-row:last-child{ border-bottom:none; }
+      .activity-tag{ font-size:0.68rem; font-weight:600; padding:0.1rem 0.5rem; border-radius:6px; flex-shrink:0; min-width:90px; text-align:center; }
