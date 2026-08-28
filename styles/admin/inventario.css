@@ -1,46 +1,216 @@
 /* Estilos propios del módulo DentalCare - Inventario — el resto (variables, .card-custom,
    .btn-teal, .patients-table, etc.) viene de tablero.css */
 
-.kpi-inv{ background:#fff; border:1px solid var(--border); border-radius:14px; padding:1rem 1.1rem; height:100%; display:flex; align-items:center; gap:0.8rem; }
-      .kpi-inv .icon-round{ width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
-      .kpi-inv .val{ font-size:1.35rem; font-weight:700; }
-      .kpi-inv .lbl{ font-size:0.78rem; color:#475569; }
+.kpi-inv {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1rem 1.1rem;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+}
 
-      .tabs-inv .btn{ font-size:0.83rem; }
+.kpi-inv .icon-round {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+}
 
-      .alert-badge-count{ background:#dc2626; color:#fff; font-size:0.72rem; font-weight:700; padding:0.15rem 0.6rem; border-radius:20px; }
-      .alert-stock-item{ background:#fef2f2; border:1px solid #fecaca; border-radius:10px; padding:0.75rem 1rem; margin-bottom:0.7rem; }
-      .alert-stock-item:last-child{ margin-bottom:0; }
-      .cat-pill-inv{ font-size:0.68rem; font-weight:600; padding:0.1rem 0.5rem; border-radius:6px; }
+.kpi-inv .val {
+      font-size: 1.35rem;
+      font-weight: 700;
+}
 
-      .mini-bar-track{ height:5px; border-radius:10px; background:#fecaca; margin-top:0.4rem; overflow:hidden; }
-      .mini-bar-fill{ height:100%; border-radius:10px; background:#dc2626; }
-      .mini-bar-track.ok{ background:#eef2f6; }
-      .mini-bar-fill.ok{ background:var(--teal); }
+.kpi-inv .lbl {
+      font-size: 0.78rem;
+      color: #475569;
+}
 
-      .cat-row-inv{ padding:0.6rem 0; border-bottom:1px solid var(--border); }
-      .cat-row-inv:last-child{ border-bottom:none; }
+.tabs-inv .btn {
+      font-size: 0.83rem;
+}
 
-      .mov-item{ display:flex; align-items:flex-start; gap:0.75rem; padding:0.85rem 0; border-bottom:1px solid var(--border); }
-      .mov-item:last-child{ border-bottom:none; }
-      .mov-icon{ width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.alert-badge-count {
+      background: #dc2626;
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.15rem 0.6rem;
+      border-radius: 20px;
+}
 
-      .stock-badge{ font-size:0.8rem; font-weight:700; }
-      .stock-critico{ color:#dc2626; }
-      .stock-bajo{ color:#d97706; }
-      .stock-ok{ color:#16a34a; }
+.alert-stock-item {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.7rem;
+}
 
-      .oc-item{ display:flex; align-items:center; gap:0.75rem; padding:0.85rem 0; border-bottom:1px solid var(--border); }
-      .oc-item:last-child{ border-bottom:none; }
-      .oc-icon{ width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-      .status-pendiente-oc{ background:#fef3c7; color:#d97706; }
-      .status-aprobada-oc{ background:#dcfce7; color:#16a34a; }
-      .status-recibida-oc{ background:#dcfce7; color:#16a34a; }
-      .status-cancelada-oc{ background:#e5e7eb; color:#64748b; }
+.alert-stock-item:last-child {
+      margin-bottom: 0;
+}
 
-      .tipo-mov-btn{ flex:1; border:2px solid var(--border); border-radius:10px; padding:0.7rem; text-align:center; cursor:pointer; font-weight:600; font-size:0.85rem; color:#475569; }
-      .tipo-mov-btn.entrada.selected{ background:var(--teal); border-color:var(--teal); color:#fff; }
-      .tipo-mov-btn.salida.selected{ background:#dc2626; border-color:#dc2626; color:#fff; }
-      .tipo-mov-btn.ajuste.selected{ background:#d97706; border-color:#d97706; color:#fff; }
+.cat-pill-inv {
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 0.1rem 0.5rem;
+      border-radius: 6px;
+}
 
-      .oc-linea-row{ display:grid; grid-template-columns: 2fr 1fr 1fr auto; gap:0.5rem; align-items:center; margin-bottom:0.5rem; }
+.mini-bar-track {
+      height: 5px;
+      border-radius: 10px;
+      background: #fecaca;
+      margin-top: 0.4rem;
+      overflow: hidden;
+}
+
+.mini-bar-fill {
+      height: 100%;
+      border-radius: 10px;
+      background: #dc2626;
+}
+
+.mini-bar-track.ok {
+      background: #eef2f6;
+}
+
+.mini-bar-fill.ok {
+      background: var(--teal);
+}
+
+.cat-row-inv {
+      padding: 0.6rem 0;
+      border-bottom: 1px solid var(--border);
+}
+
+.cat-row-inv:last-child {
+      border-bottom: none;
+}
+
+.mov-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.85rem 0;
+      border-bottom: 1px solid var(--border);
+}
+
+.mov-item:last-child {
+      border-bottom: none;
+}
+
+.mov-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+}
+
+.stock-badge {
+      font-size: 0.8rem;
+      font-weight: 700;
+}
+
+.stock-critico {
+      color: #dc2626;
+}
+
+.stock-bajo {
+      color: #d97706;
+}
+
+.stock-ok {
+      color: #16a34a;
+}
+
+.oc-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.85rem 0;
+      border-bottom: 1px solid var(--border);
+}
+
+.oc-item:last-child {
+      border-bottom: none;
+}
+
+.oc-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+}
+
+.status-pendiente-oc {
+      background: #fef3c7;
+      color: #d97706;
+}
+
+.status-aprobada-oc {
+      background: #dcfce7;
+      color: #16a34a;
+}
+
+.status-recibida-oc {
+      background: #dcfce7;
+      color: #16a34a;
+}
+
+.status-cancelada-oc {
+      background: #e5e7eb;
+      color: #64748b;
+}
+
+.tipo-mov-btn {
+      flex: 1;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 0.7rem;
+      text-align: center;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: #475569;
+}
+
+.tipo-mov-btn.entrada.selected {
+      background: var(--teal);
+      border-color: var(--teal);
+      color: #fff;
+}
+
+.tipo-mov-btn.salida.selected {
+      background: #dc2626;
+      border-color: #dc2626;
+      color: #fff;
+}
+
+.tipo-mov-btn.ajuste.selected {
+      background: #d97706;
+      border-color: #d97706;
+      color: #fff;
+}
+
+.oc-linea-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr auto;
+      gap: 0.5rem;
+      align-items: center;
+      margin-bottom: 0.5rem;
+}

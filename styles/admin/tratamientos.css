@@ -2,34 +2,134 @@
    .btn-teal, .patients-table, etc.) viene de tablero.css */
 
 /* Estilos propios de este módulo. El resto viene de portal.css */
-      .cat-badge{ font-size:0.7rem; font-weight:600; padding:0.15rem 0.55rem; border-radius:6px; display:inline-block; }
-      .cat-Estetico{ background:#e6f7f5; color:#0f766e; }
-      .cat-Restaurativo{ background:#dbeafe; color:#2563eb; }
-      .cat-Cirugia{ background:#fee2e2; color:#dc2626; }
-      .cat-Preventivo{ background:#dcfce7; color:#16a34a; }
-      .cat-Ortodoncia{ background:#fce7f3; color:#c026d3; }
+.cat-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.55rem;
+  border-radius: 6px;
+  display: inline-block;
+}
 
-      .service-card{
-        background:#fff; border:1px solid var(--border); border-radius:14px; padding:1.1rem 1.25rem; height:100%;
-      }
-      .service-card h6{ font-weight:700; margin-bottom:0.3rem; }
-      .service-card .desc{ font-size:0.8rem; color:#475569; margin:0.5rem 0; }
-      .service-card .meta{ display:flex; justify-content:space-between; align-items:center; margin-top:0.6rem; }
-      .service-card .duration{ font-size:0.78rem; color:var(--text-muted); }
-      .service-card .price{ font-weight:700; color:#16a34a; }
-      .edit-icon-corner{ color:#94a3b8; cursor:pointer; }
-      .edit-icon-corner:hover{ color:var(--teal-dark); }
-      .service-pausado{ opacity:0.55; background:#f8fafc; }
-      .badge-pausado{
-        font-size:0.62rem; font-weight:700; background:#f1f5f9; color:#64748b;
-        padding:0.15rem 0.4rem; border-radius:6px; vertical-align:middle; margin-left:0.3rem;
-      }
+.cat-Estetico {
+  background: #e6f7f5;
+  color: #0f766e;
+}
 
-      .kpi-icon-box{
-        width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1rem;
-      }
-      .progress-mini{ height:6px; border-radius:10px; background:#eef2f6; width:110px; }
-      .progress-mini .bar{ height:100%; border-radius:10px; background: var(--teal); }
-      .status-completado{ background:#dcfce7; color:#16a34a; }
-      .status-enprogreso{ background:#fef3c7; color:#d97706; }
-      .status-cancelado{ background:#fee2e2; color:#b91c1c; }
+.cat-Restaurativo {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.cat-Cirugia {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.cat-Preventivo {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.cat-Ortodoncia {
+  background: #fce7f3;
+  color: #c026d3;
+}
+
+.service-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.1rem 1.25rem;
+  height: 100%;
+}
+
+.service-card h6 {
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+}
+
+.service-card .desc {
+  font-size: 0.8rem;
+  color: #475569;
+  margin: 0.5rem 0;
+}
+
+.service-card .meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.6rem;
+}
+
+.service-card .duration {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.service-card .price {
+  font-weight: 700;
+  color: #16a34a;
+}
+
+.edit-icon-corner {
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+.edit-icon-corner:hover {
+  color: var(--teal-dark);
+}
+
+.service-pausado {
+  opacity: 0.55;
+  background: #f8fafc;
+}
+
+.badge-pausado {
+  font-size: 0.62rem;
+  font-weight: 700;
+  background: #f1f5f9;
+  color: #64748b;
+  padding: 0.15rem 0.4rem;
+  border-radius: 6px;
+  vertical-align: middle;
+  margin-left: 0.3rem;
+}
+
+.kpi-icon-box {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+.progress-mini {
+  height: 6px;
+  border-radius: 10px;
+  background: #eef2f6;
+  width: 110px;
+}
+
+.progress-mini .bar {
+  height: 100%;
+  border-radius: 10px;
+  background: var(--teal);
+}
+
+.status-completado {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.status-enprogreso {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.status-cancelado {
+  background: #fee2e2;
+  color: #b91c1c;
+}

@@ -663,4 +663,14 @@ el valor real con el color de marca. */
   .stat-value{
     font-size:1.35rem;
   }
+  /* Los valores KPI (montos, cifras largas) son un solo token sin
+     espacios — sin esto, en vez de bajar de línea se desbordan
+     de la caja hacia afuera */
+  .kpi-value, .stat-value{
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+  .kpi-value{
+    font-size:1.25rem;
+  }
 }

@@ -4,15 +4,56 @@
 /* Estilos para la pestaña Odontograma (solo lectura) dentro del
          modal de detalle del paciente -- copiados del módulo Odontograma
          real, para que se vea idéntico. */
-      .tooth-grid-row{ display:flex; gap:6px; justify-content:space-between; }
-      .tooth-col{ display:flex; flex-direction:column; align-items:center; gap:2px; }
-      .tooth-num{ font-size:0.65rem; color:var(--text-muted); }
-      .tooth-box-o{
-        width:38px; height:38px; border-radius:7px; border:1px solid var(--border);
-        display:flex; align-items:center; justify-content:center; font-size:0.65rem; font-weight:700;
-        background:#fff; color:#94a3b8;
-      }
-      .odo-stat-box{ border-radius:12px; padding:0.9rem; text-align:center; }
-      .odo-stat-box .n{ font-size:1.4rem; font-weight:700; }
-      .odo-stat-box .l{ font-size:0.78rem; }
-      .odo-badge{ font-size:0.72rem; font-weight:600; padding:0.2rem 0.6rem; border-radius:20px; }
+.tooth-grid-row {
+  display: flex;
+  gap: 6px;
+  justify-content: space-between;
+}
+
+.tooth-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.tooth-num {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+.tooth-box-o {
+  width: 38px;
+  height: 38px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: #fff;
+  color: #94a3b8;
+}
+
+.odo-stat-box {
+  border-radius: 12px;
+  padding: 0.9rem;
+  text-align: center;
+}
+
+.odo-stat-box .n {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.odo-stat-box .l {
+  font-size: 0.78rem;
+}
+
+.odo-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+}
