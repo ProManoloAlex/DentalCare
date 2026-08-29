@@ -566,8 +566,13 @@ function activarFormularioAsignar() {
   });
 }
 
-function cancelarTratamiento(id) {
-  if (!confirm('¿Cancelar este tratamiento? El historial y los pagos ya registrados se conservan.')) return;
+async function cancelarTratamiento(id) {
+  const confirmado = await confirmarAccion('¿Cancelar este tratamiento? El historial y los pagos ya registrados se conservan.', {
+    titulo: 'Cancelar tratamiento',
+    textoBoton: 'Cancelar',
+    colorBoton: 'btn-danger',
+  });
+  if (!confirmado) return;
 
   fetch('/api/admin/tratamientos/pacientes/cancelar.php', {
     method: 'POST',
