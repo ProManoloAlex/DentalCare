@@ -204,15 +204,15 @@
       </div>
       <div class="row g-3 mt-2">
         <div class="col-md-6">
-          <div class="form-label small fw-semibold">Email remitente</label>
+          <label class="form-label small fw-semibold" for="emailRemitente">Email remitente</label>
           <input type="email" class="form-control" id="emailRemitente" value="recordatorios@dentalcare.mx">
         </div>
         <div class="col-md-6">
-          <div class="form-label small fw-semibold">Nombre del remitente</label>
+          <label class="form-label small fw-semibold" for="emailNombreRemitente">Nombre del remitente</label>
           <input type="text" class="form-control" id="emailNombreRemitente" value="DentalCare">
         </div>
         <div class="col-md-12">
-          <div class="form-label small fw-semibold">Asunto del correo</label>
+          <label class="form-label small fw-semibold" for="emailAsunto">Asunto del correo</label>
           <input type="text" class="form-control" id="emailAsunto" value="Recordatorio de tu cita en DentalCare">
         </div>
       </div>
@@ -241,34 +241,34 @@
         <form id="formRegla">
           <input type="hidden" name="reglaId">
           <div class="mb-3">
-            <div class="form-label small fw-semibold">Nombre de la regla</label>
-            <input type="text" class="form-control" name="nombre" placeholder="Ej: Recordatorio 24h antes" required>
+            <label class="form-label small fw-semibold" for="reglaNombreInput">Nombre de la regla</label>
+            <input type="text" class="form-control" name="nombre" id="reglaNombreInput" placeholder="Ej: Recordatorio 24h antes" required>
           </div>
           <div class="mb-3">
-            <div class="form-label small fw-semibold">Descripción</label>
-            <input type="text" class="form-control" name="descripcion" placeholder="Descripción breve">
+            <label class="form-label small fw-semibold" for="reglaDescripcionInput">Descripción</label>
+            <input type="text" class="form-control" name="descripcion" id="reglaDescripcionInput" placeholder="Descripción breve">
           </div>
           <div class="row g-3 mb-3">
             <div class="col-md-4">
-              <div class="form-label small fw-semibold">Timing</label>
-              <select class="form-select" name="timing">
+              <label class="form-label small fw-semibold" for="reglaTimingSelect">Timing</label>
+              <select class="form-select" name="timing" id="reglaTimingSelect">
                 <option value="antes">Antes de</option>
                 <option value="despues">Después de</option>
               </select>
             </div>
             <div class="col-md-4">
-              <div class="form-label small fw-semibold">Horas</label>
-              <input type="number" class="form-control" name="horas" value="24" min="1" required>
+              <label class="form-label small fw-semibold" for="reglaHorasInput">Horas</label>
+              <input type="number" class="form-control" name="horas" id="reglaHorasInput" value="24" min="1" required>
             </div>
             <div class="col-md-4">
-              <div class="form-label small fw-semibold">Canal</label>
-              <select class="form-select" name="canal">
+              <label class="form-label small fw-semibold" for="reglaCanalSelect">Canal</label>
+              <select class="form-select" name="canal" id="reglaCanalSelect">
                 <option value="email">Email</option>
               </select>
             </div>
           </div>
           <div class="mb-3">
-            <div class="form-label small fw-semibold d-block">Aplica a</label>
+            <div class="form-label small fw-semibold d-block">Aplica a</div>
             <div class="d-flex gap-2" id="aplicaAGroup">
               <div class="aplica-pill selected" data-valor="todas">Todas Las Citas</div>
               <div class="aplica-pill" data-valor="confirmadas">Solo Confirmadas</div>
@@ -277,7 +277,7 @@
             <input type="hidden" name="aplicaA" value="todas">
           </div>
           <div class="mb-1">
-            <div class="form-label small fw-semibold d-block">Plantilla del mensaje</label>
+            <div class="form-label small fw-semibold d-block">Plantilla del mensaje</div>
             <div class="mb-1">
               <span class="var-chip" data-var="{{nombre}}">{{nombre}}</span>
               <span class="var-chip" data-var="{{fecha}}">{{fecha}}</span>

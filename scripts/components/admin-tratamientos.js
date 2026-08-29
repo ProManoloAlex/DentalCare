@@ -54,6 +54,37 @@ function formatearFechaCorta(fechaStr) {
   return `${d} ${meses[parseInt(m, 10) - 1]} ${y}`;
 }
 
+/**
+ * Reemplaza confirm() nativo (que el navegador prefija con "localhost dice:").
+ * Devuelve una Promise<boolean>: true si el usuario confirmó, false si canceló/cerró el modal.
+ */
+function confirmarAccion(mensaje, { titulo = 'Confirmar acción', textoBoton = 'Confirmar', colorBoton = 'btn-danger' } = {}) {
+  return new Promise((resolve) => {
+    const modalEl = document.getElementById('modalConfirmarAccion');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+
+    document.getElementById('confirmarAccionTitulo').textContent = titulo;
+    document.getElementById('confirmarAccionMensaje').textContent = mensaje;
+
+    const botonViejo = document.getElementById('confirmarAccionBoton');
+    botonViejo.textContent = textoBoton;
+    botonViejo.className = `btn ${colorBoton}`;
+
+    const boton = botonViejo.cloneNode(true);
+    botonViejo.parentNode.replaceChild(boton, botonViejo);
+
+    let confirmado = false;
+    boton.addEventListener('click', () => {
+      confirmado = true;
+      modal.hide();
+    });
+
+    modalEl.addEventListener('hidden.bs.modal', () => resolve(confirmado), { once: true });
+
+    modal.show();
+  });
+}
+
 // ============================================================
 // VISTA: CATÁLOGO DE SERVICIOS
 // ============================================================
@@ -131,7 +162,7 @@ function renderCatalogoServicios(servicios) {
 }
 
 function activarAccionesCatalogo() {
-  document.getElementById('gridServicios').addEventListener('click', function (e) {
+  document.getElementById('gridServicios').addEventListener('click',async  function (e) {
     const editar = e.target.closest('[data-action="editar-servicio"]');
     if (editar) {
       abrirEdicionServicio(editar.getAttribute('data-id'));
@@ -145,7 +176,13 @@ function activarAccionesCatalogo() {
       const mensaje = estaActivo
         ? '¿Pausar este servicio? Deja de ofrecerse para citas/tratamientos nuevos, pero el historial no se toca.'
         : '¿Reactivar este servicio?';
-      if (!confirm(mensaje)) return;
+      
+      const confirmado = await confirmarAccion(mensaje, {
+        titulo: estaActivo ? 'Pausar servicio' : 'Reactivar servicio',
+        textoBoton: estaActivo ? 'Pausar' : 'Reactivar',
+        colorBoton: estaActivo ? 'btn-danger' : 'btn-teal',
+      });
+      if (!confirmado) return;
 
       fetch('/api/admin/tratamientos/catalogo/cambiar-estado.php', {
         method: 'POST',
@@ -170,8 +207,14 @@ function activarAccionesCatalogo() {
     const eliminar = e.target.closest('[data-action="eliminar-servicio"]');
     if (eliminar) {
       const id = eliminar.getAttribute('data-id');
-      if (!confirm('¿Eliminar este servicio del catálogo? Esta acción no se puede deshacer.')) return;
 
+      const confirmado = await confirmarAccion('¿Eliminar este servicio del catálogo? Esta acción no se puede deshacer.', {
+        titulo: 'Eliminar servicio',
+        textoBoton: 'Eliminar',
+        colorBoton: 'btn-danger',
+      });
+      if (!confirmado) return;
+      
       fetch('/api/admin/tratamientos/catalogo/eliminar.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -351,7 +394,7 @@ function renderTablaTratamientos(lista) {
         <td>
           <a href="#" class="link-teal" data-id="${t.id}" data-action="ver-detalle">Ver detalles</a>
           ${puedeAgendar ? `<i class="bi bi-calendar-plus action-icon ms-2" data-id="${t.id}" data-action="agendar-sesion" title="Agendar siguiente sesión" style="color:var(--teal)"></i>` : ''}
-          ${t.estado !== 'Cancelado' ? `<i class="bi bi-x-circle action-icon ms-2" data-id="${t.id}" data-action="cancelar-tratamiento" title="Cancelar tratamiento" style="color:#dc2626"></i>` : ''}
+          ${(t.estado !== 'Cancelado' && t.estado !== 'Completado') ? `<i class="bi bi-x-circle action-icon ms-2" data-id="${t.id}" data-action="cancelar-tratamiento" title="Cancelar tratamiento" style="color:#dc2626"></i>` : ''}
         </td>
       </tr>
     `;

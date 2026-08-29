@@ -34,9 +34,15 @@
   font-size: 1rem;
 }
 
+.tabs-recordatorios {
+  gap: 0.5rem;
+}
+
 .tabs-recordatorios .btn {
   font-size: 0.83rem;
   position: relative;
+  margin-left: 0 !important;
+  border-radius: 8px !important;
 }
 
 .tab-badge {

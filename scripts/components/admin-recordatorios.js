@@ -164,7 +164,7 @@ async function cargarReglas() {
             <div class="text-muted small mt-1"><i class="bi bi-clock"></i> ${r.horas}h ${r.timing === 'antes' ? 'antes' : 'después'} · <i class="bi bi-envelope"></i> Email · ${textoAplicaA(r.aplica_a)}</div>
           </div>
           <div class="d-flex gap-2 align-items-center">
-            <div class="switch-o ${Number(r.activa) ? 'on' : ''}" data-id="${r.id}" data-action="toggle"><div class="knob"></div></div>
+            <div class="switch-o ${Number(r.activa) ? 'on' : 'off'}" data-id="${r.id}" data-action="toggle"><div class="knob"></div></div>
             <i class="bi bi-pencil action-icon" data-id="${r.id}" data-action="editar" style="cursor:pointer;"></i>
           </div>
         </div>
@@ -237,6 +237,7 @@ function activarModalRegla() {
     };
     const esEdicion = !!reglaId;
     if (esEdicion) payload.reglaId = Number(reglaId);
+    else payload.activa = true; // una regla nueva nace activa por defecto
 
     try {
       const res = await fetch(`/api/admin/recordatorios/reglas/${esEdicion ? 'actualizar' : 'crear'}.php`, {
@@ -327,7 +328,9 @@ async function cargarHistorial() {
 
 function activarCanales() {
   document.getElementById('switchEmail').addEventListener('click', function () {
-    this.classList.toggle('on');
+    const activo = !this.classList.contains('on');
+    this.classList.toggle('on', activo);
+    this.classList.toggle('off', !activo);
   });
 
   document.getElementById('btnGuardarCanales').addEventListener('click', async function () {
@@ -360,7 +363,10 @@ async function cargarCanales() {
     if (!data.ok) return;
 
     const c = data.canales;
-    document.getElementById('switchEmail').classList.toggle('on', !!Number(c.email_activo));
+    const activo = !!Number(c.email_activo);
+    const switchEmail = document.getElementById('switchEmail');
+    switchEmail.classList.toggle('on', activo);
+    switchEmail.classList.toggle('off', !activo);
     document.getElementById('emailRemitente').value = c.email_remitente || '';
     document.getElementById('emailNombreRemitente').value = c.email_nombre_remitente || '';
     document.getElementById('emailAsunto').value = c.email_asunto || '';

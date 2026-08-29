@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', function () {
   activarFiltros();
   activarModal();
   activarModalFirmar();
+  activarModalRechazo();
   cargarSelectPacientes();
   cargarTipos();
   cargarResumen();
@@ -113,11 +114,7 @@ document.getElementById('tbodyConsentimientos').addEventListener('click', async 
 
   if (accion === 'ver') abrirModalVerDocumento(id);
   if (accion === 'firmar') abrirModalFirmar(id);
-
-  if (accion === 'rechazar') {
-    if (!confirm('¿Marcar este consentimiento como rechazado?')) return;
-    await enviarFirma(id, 'rechazado', null);
-  }
+  if (accion === 'rechazar') abrirModalConfirmarRechazo(id);
 });
 
 async function abrirModalVerDocumento(id) {
@@ -158,6 +155,27 @@ function activarModalFirmar() {
     await enviarFirma(id, 'firmado', nombreFirma);
     document.activeElement.blur();
     bootstrap.Modal.getInstance(document.getElementById('modalFirmarConsentimiento')).hide();
+  });
+}
+
+// ---------- MODAL: CONFIRMAR RECHAZO ----------
+// Reemplaza el confirm() nativo del navegador que había antes en el
+// listener de la tabla.
+
+let idPendienteRechazo = null;
+
+function abrirModalConfirmarRechazo(id) {
+  idPendienteRechazo = id;
+  new bootstrap.Modal(document.getElementById('modalConfirmarRechazo')).show();
+}
+
+function activarModalRechazo() {
+  document.getElementById('btnConfirmarRechazo').addEventListener('click', async function () {
+    if (idPendienteRechazo === null) return;
+    await enviarFirma(idPendienteRechazo, 'rechazado', null);
+    idPendienteRechazo = null;
+    document.activeElement.blur();
+    bootstrap.Modal.getInstance(document.getElementById('modalConfirmarRechazo')).hide();
   });
 }
 
@@ -259,3 +277,31 @@ document.addEventListener('hide.bs.modal', function (e) {
     document.activeElement.blur();
   }
 });
+
+// ---------- Firmar consentimiento (POST a backend real) ----------
+async function enviarFirma(id, estado, firma) {
+  try {
+    const res = await fetch('/api/admin/consentimientos/firmar.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        consentimientoId: id, // <-- Cambiado de 'id' a 'consentimientoId'
+        estado: estado, 
+        firma: firma 
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!data.ok) {
+      alert(data.mensaje || 'Ocurrió un error al procesar el consentimiento.');
+      return;
+    }
+
+    await cargarLista();
+    await cargarResumen();
+  } catch (err) {
+    console.error('Error al enviar la firma:', err);
+    alert('Error de conexión al procesar la firma.');
+  }
+}

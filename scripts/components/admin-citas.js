@@ -42,6 +42,37 @@ function getIniciales(nombre) {
   return nombre.trim().split(/\s+/).slice(0, 2).map(p => p[0].toUpperCase()).join('');
 }
 
+/**
+ * Reemplaza confirm() nativo (que el navegador prefija con "localhost dice:").
+ * Devuelve una Promise<boolean>: true si el usuario confirmó, false si canceló/cerró el modal.
+ */
+function confirmarAccion(mensaje, { titulo = 'Confirmar acción', textoBoton = 'Confirmar', colorBoton = 'btn-danger' } = {}) {
+  return new Promise((resolve) => {
+    const modalEl = document.getElementById('modalConfirmarAccion');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+
+    document.getElementById('confirmarAccionTitulo').textContent = titulo;
+    document.getElementById('confirmarAccionMensaje').textContent = mensaje;
+
+    const botonViejo = document.getElementById('confirmarAccionBoton');
+    botonViejo.textContent = textoBoton;
+    botonViejo.className = `btn ${colorBoton}`;
+
+    const boton = botonViejo.cloneNode(true);
+    botonViejo.parentNode.replaceChild(boton, botonViejo);
+
+    let confirmado = false;
+    boton.addEventListener('click', () => {
+      confirmado = true;
+      modal.hide();
+    });
+
+    modalEl.addEventListener('hidden.bs.modal', () => resolve(confirmado), { once: true });
+
+    modal.show();
+  });
+}
+
 function formatearFechaCorta(fechaStr) {
   const [y, m, d] = fechaStr.split('-');
   const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
@@ -266,12 +297,13 @@ function renderListaCitas(citas) {
         </div>
       </td>
       <td>${formatearFechaCorta(c.fecha)}, ${c.hora}</td>
-      <td>${c.tratamiento}${c.tratamientoId ? ' <i class="bi bi-link-45deg" style="color:var(--teal-dark)" title="Parte de un tratamiento de varias sesiones"></i>' : ''}</td>      <td>${c.odontologo}</td>
+      <td>${c.tratamiento}${c.tratamientoId ? ' <i class="bi bi-link-45deg" style="color:var(--teal-dark)" title="Parte de un tratamiento de varias sesiones"></i>' : ''}</td>
+      <td>${c.odontologo}</td>
       <td>${c.duracion} min</td>
       <td><span class="status-badge ${estadoClase(c.estado)}">${c.estado}</span></td>
       <td>
         <i class="bi bi-pencil action-icon" data-id="${c.id}" data-action="editar" title="Editar"></i>
-        ${c.estado !== 'Cancelada' ? `<i class="bi bi-x-circle action-icon" data-id="${c.id}" data-action="cancelar" title="Cancelar cita" style="color:#dc2626"></i>` : ''}
+        ${c.estado === 'Pendiente' ? `<i class="bi bi-x-circle action-icon" data-id="${c.id}" data-action="cancelar" title="Cancelar cita" style="color:#dc2626"></i>` : ''}
       </td>
     </tr>
   `).join('');
@@ -322,8 +354,13 @@ function abrirEdicion(id) {
     });
 }
 
-function cancelarCita(id) {
-  if (!confirm('¿Cancelar esta cita?')) return;
+async function cancelarCita(id) {
+  const confirmado = await confirmarAccion('¿Cancelar esta cita?', {
+    titulo: 'Cancelar cita',
+    textoBoton: 'Sí, cancelar',
+    colorBoton: 'btn-danger',
+  });
+  if (!confirmado) return;
 
   fetch('/api/admin/citas/cancelar.php', {
     method: 'POST',

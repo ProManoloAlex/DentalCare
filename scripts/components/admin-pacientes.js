@@ -43,6 +43,38 @@ function getIniciales(nombre) {
   return nombre.trim().split(/\s+/).slice(0, 2).map(p => p[0].toUpperCase()).join('');
 }
 
+/**
+ * Reemplaza confirm() nativo (que el navegador prefija con "localhost dice:").
+ * Devuelve una Promise<boolean>: true si el usuario confirmó, false si canceló/cerró el modal.
+ */
+function confirmarAccion(mensaje, { titulo = 'Confirmar acción', textoBoton = 'Confirmar', colorBoton = 'btn-danger' } = {}) {
+  return new Promise((resolve) => {
+    const modalEl = document.getElementById('modalConfirmarAccion');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+
+    document.getElementById('confirmarAccionTitulo').textContent = titulo;
+    document.getElementById('confirmarAccionMensaje').textContent = mensaje;
+
+    const botonViejo = document.getElementById('confirmarAccionBoton');
+    botonViejo.textContent = textoBoton;
+    botonViejo.className = `btn ${colorBoton}`;
+
+    // Clona el botón para quitar listeners de usos anteriores del modal
+    const boton = botonViejo.cloneNode(true);
+    botonViejo.parentNode.replaceChild(boton, botonViejo);
+
+    let confirmado = false;
+    boton.addEventListener('click', () => {
+      confirmado = true;
+      modal.hide();
+    });
+
+    modalEl.addEventListener('hidden.bs.modal', () => resolve(confirmado), { once: true });
+
+    modal.show();
+  });
+}
+
 function activarFiltros() {
   let debounceTimer;
   document.getElementById('inputBuscar').addEventListener('input', () => {
@@ -344,12 +376,17 @@ function precargarFormularioEdicion(p) {
   form.elements['contactoEmergencia'].value = p.contacto_emergencia === '—' ? '' : p.contacto_emergencia;
 }
 
-function cambiarEstadoPaciente(id, estaActivo) {
+async function cambiarEstadoPaciente(id, estaActivo) {
   const mensaje = estaActivo
     ? '¿Desactivar a este paciente? Su expediente NO se borra, solo deja de aparecer como activo.'
     : '¿Reactivar a este paciente?';
 
-  if (!confirm(mensaje)) return;
+  const confirmado = await confirmarAccion(mensaje, {
+    titulo: estaActivo ? 'Desactivar paciente' : 'Reactivar paciente',
+    textoBoton: estaActivo ? 'Desactivar' : 'Reactivar',
+    colorBoton: estaActivo ? 'btn-danger' : 'btn-teal',
+  });
+  if (!confirmado) return;
 
   fetch('/api/admin/pacientes/cambiar-estado.php', {
     method: 'POST',
