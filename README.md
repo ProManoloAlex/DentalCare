@@ -46,9 +46,7 @@ Entra a `auth/Login.php` con el correo y contraseña que acabas de crear. Desde 
 ## Pendientes conocidos
 
 ### Antes de manejar datos reales de una clínica de verdad
-- **Apagar errores visibles de PHP en producción** — hoy los errores de PHP se muestran directo en pantalla/HTTP en vez de ir a un log. Ya nos mordió varias veces durante el desarrollo (errores disfrazados de HTML rompiendo respuestas JSON) — hay que resolverlo antes de producción, no solo por estética sino porque expone detalles internos del sistema.
-- **Revisar `APP_URL`** en el `.env` del servidor real antes de que cualquier paciente use "olvidé mi contraseña".
-- **Rotar cualquier credencial que haya quedado expuesta** durante el desarrollo (por ejemplo, si alguna vez pegaste una contraseña de aplicación de Gmail en un chat o documento, genera una nueva antes de ir a producción).
+
 - **Backups automáticos en el servidor real** — el script de backup que ya tienes (`backup-clinica-dental.bat`) es para tu máquina de desarrollo. En producción hace falta el equivalente corriendo en el servidor real (o backups gestionados por el proveedor de hosting).
 
 ### Funcionalidad incompleta
@@ -56,10 +54,6 @@ Entra a `auth/Login.php` con el correo y contraseña que acabas de crear. Desde 
 - **Notificaciones automáticas por Email para eventos de pacientes** — solo Recordatorios de citas tiene envío real por SMTP. Los otros 5 eventos que existían en Configuración → Notificaciones se quitaron por decorativos (nunca se conectaron); si más adelante quieres reactivar alguno (confirmación de cita, bienvenida a paciente nuevo, etc.), hay que agregar la llamada a `Notificador::disparar()` en el Service correspondiente.
 - **Auto-registro de doctores** — hoy la única forma de crear un doctor nuevo es por SQL directo (`crear-primer-doctor.php`) o insertando a mano. Si vas a tener más de un doctor usando el sistema, vale la pena construir un flujo real desde Configuración → Usuarios y Roles.
 
-### Revisión pendiente (no confirmada, por si acaso)
-Durante esta sesión encontramos el mismo patrón de bug repetido en varios módulos distintos (`<div>` cerrado con `</label>` o `</>`, IDs duplicados, modales anidados por accidente) en Citas, Tratamientos, Pacientes, Finanzas, Inventario y Consentimientos. Ya se corrigieron todos los que revisamos, pero **no se auditaron con el mismo detalle**: Reportes, Odontograma (módulo completo, no solo la vista de solo lectura en Pacientes), y Configuración más allá de la sección de Notificaciones. Si notas una pantalla que se queda en gris o un botón que no hace nada en esos módulos, probablemente sea el mismo tipo de bug.
-
----
 
 ## Notas de arquitectura (para retomar el proyecto más adelante)
 
