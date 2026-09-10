@@ -1,0 +1,6 @@
+[2026-09-10 02:44:20] OK - backup generado (backup_20260910_024420.sql.gz, 13637 bytes)
+[2026-09-10 02:44:20] INFO - Ya existe una copia en el servidor para hoy, no se duplica: backup_20260910_023910.sql.gz
+[2026-09-10 02:47:36] OK - backup generado (backup_20260910_024736.sql.gz, 13635 bytes)
+[2026-09-10 02:47:36] OK - Copia guardada en el servidor: backup_20260910_024736.sql.gz
+[2026-09-10 03:13:22] OK - backup generado (backup_20260910_031322.sql.gz, 13636 bytes)
+[2026-09-10 03:13:22] INFO - Ya existe una copia en el servidor para hoy, no se duplica: backup_20260910_024736.sql.gz
