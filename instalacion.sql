@@ -95,6 +95,25 @@ CREATE TABLE `citas` (
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `codigos_verificacion`
+--
+
+CREATE TABLE `codigos_verificacion` (
+  `id` int(11) NOT NULL,
+  `usuario_id` int(11) NOT NULL,
+  `codigo` varchar(6) NOT NULL,
+  `expira_en` datetime NOT NULL,
+  `usado` tinyint(1) NOT NULL DEFAULT 0,
+  `fecha_creacion` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `codigos_verificacion`
+--
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `configuracion_canales`
 --
 
@@ -594,6 +613,24 @@ INSERT INTO `servicios` (`id`, `nombre`, `categoria`, `descripcion`, `precio`, `
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `tokens_recordarme`
+--
+
+CREATE TABLE `tokens_recordarme` (
+  `id` int(11) NOT NULL,
+  `usuario_id` int(11) NOT NULL,
+  `token_hash` varchar(64) NOT NULL,
+  `expira_en` datetime NOT NULL,
+  `creado_en` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `tokens_recordarme`
+--
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `tokens_recuperacion`
 --
 
@@ -652,6 +689,7 @@ CREATE TABLE `usuarios` (
   `contrasenna` varchar(255) DEFAULT NULL,
   `rol` enum('doctor','paciente') NOT NULL DEFAULT 'paciente',
   `activo` tinyint(1) NOT NULL DEFAULT 1,
+  `correo_verificado` tinyint(1) NOT NULL DEFAULT 0,
   `fecha_creacion` timestamp NOT NULL DEFAULT current_timestamp(),
   `ultimo_login` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -680,6 +718,13 @@ ALTER TABLE `citas`
   ADD KEY `doctor_id` (`doctor_id`),
   ADD KEY `servicio_id` (`servicio_id`),
   ADD KEY `fk_citas_tratamiento` (`tratamiento_id`);
+
+--
+-- Indices de la tabla `codigos_verificacion`
+--
+ALTER TABLE `codigos_verificacion`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `usuario_id` (`usuario_id`);
 
 --
 -- Indices de la tabla `configuracion_canales`
@@ -833,6 +878,13 @@ ALTER TABLE `servicios`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indices de la tabla `tokens_recordarme`
+--
+ALTER TABLE `tokens_recordarme`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `usuario_id` (`usuario_id`);
+
+--
 -- Indices de la tabla `tokens_recuperacion`
 --
 ALTER TABLE `tokens_recuperacion`
@@ -870,6 +922,12 @@ ALTER TABLE `alertas_internas_preferencias`
 --
 ALTER TABLE `citas`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+
+--
+-- AUTO_INCREMENT de la tabla `codigos_verificacion`
+--
+ALTER TABLE `codigos_verificacion`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `consentimientos`
@@ -980,6 +1038,12 @@ ALTER TABLE `servicios`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
+-- AUTO_INCREMENT de la tabla `tokens_recordarme`
+--
+ALTER TABLE `tokens_recordarme`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT de la tabla `tokens_recuperacion`
 --
 ALTER TABLE `tokens_recuperacion`
@@ -1009,6 +1073,12 @@ ALTER TABLE `citas`
   ADD CONSTRAINT `citas_ibfk_2` FOREIGN KEY (`doctor_id`) REFERENCES `doctores` (`id`),
   ADD CONSTRAINT `citas_ibfk_3` FOREIGN KEY (`servicio_id`) REFERENCES `servicios` (`id`),
   ADD CONSTRAINT `fk_citas_tratamiento` FOREIGN KEY (`tratamiento_id`) REFERENCES `tratamientos` (`id`) ON DELETE SET NULL;
+
+--
+-- Filtros para la tabla `codigos_verificacion`
+--
+ALTER TABLE `codigos_verificacion`
+  ADD CONSTRAINT `codigos_verificacion_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `consentimientos`
@@ -1091,6 +1161,12 @@ ALTER TABLE `recordatorios`
   ADD CONSTRAINT `recordatorios_ibfk_1` FOREIGN KEY (`cita_id`) REFERENCES `citas` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `recordatorios_ibfk_2` FOREIGN KEY (`regla_id`) REFERENCES `reglas_recordatorio` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `recordatorios_ibfk_3` FOREIGN KEY (`paciente_id`) REFERENCES `pacientes` (`id`) ON DELETE CASCADE;
+
+--
+-- Filtros para la tabla `tokens_recordarme`
+--
+ALTER TABLE `tokens_recordarme`
+  ADD CONSTRAINT `tokens_recordarme_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `tokens_recuperacion`
