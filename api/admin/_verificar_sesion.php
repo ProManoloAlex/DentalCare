@@ -6,22 +6,12 @@
  */
 
 require_once __DIR__ . '/../../config/Conexion_DB.php';
+require_once __DIR__ . '/../../config/SesionHelper.php';
 
 function verificarSesionDoctor(): void {
-    session_start();
-
-    if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_rol'] !== 'doctor') {
-        http_response_code(401);
-        header('Content-Type: application/json');
-        echo json_encode(['ok' => false, 'mensaje' => 'No hay sesión de doctor activa.']);
-        exit();
-    }
+    _verificarRolEnSesion('doctor');
 }
 
-/**
- * Devuelve el doctores.id del doctor en sesión, para módulos que
- * necesiten filtrar "solo mis citas" en vez de "todas las de la clínica".
- */
 function obtenerDoctorIdDeSesion(): int {
     verificarSesionDoctor();
 

@@ -1,16 +1,18 @@
+// Envía el registro sin recargar la página. Si sale bien, en vez de
+// redirigir a Login.php con un alert() (como hacía antes el PHP),
+// pasa directo al paso de verificación de correo.
 document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('form-login');
+    const form = document.getElementById('form-registro');
     if (!form) return;
 
     const btnSubmit = form.querySelector('button[type="submit"]');
-    const inputContrasenna = document.getElementById('login-contrasenna');
 
     form.addEventListener('submit', async (evento) => {
         evento.preventDefault();
 
         btnSubmit.disabled = true;
         btnSubmit.dataset.textoOriginal = btnSubmit.dataset.textoOriginal || btnSubmit.textContent;
-        btnSubmit.textContent = 'Iniciando sesión...';
+        btnSubmit.textContent = 'Creando cuenta...';
 
         try {
             const respuesta = await fetch(form.action, {
@@ -19,28 +21,14 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const datos = await respuesta.json();
 
-            if (datos.exito) {
-                mostrarAvisoAuth(true, datos.mensaje);
-                setTimeout(() => {
-                    window.location.href = datos.destino;
-                }, 900);
-                return;
-            }
-
-            // Correo sin verificar: lo mandamos directo a capturar su
-            // código, en vez de solo mostrarle un error genérico
-            if (datos.requiereVerificacion) {
+            if (datos.ok) {
                 document.getElementById('verificacion-correo').value = datos.correo;
                 document.getElementById('verificacion-correo-mostrado').textContent = datos.correo;
                 mostrarPanelAuth('panel-verificacion');
-                mostrarAvisoAuth(false, datos.mensaje, '', 'Verifica tu correo');
-                return;
+                mostrarAvisoAuth(true, datos.mensaje, 'Cuenta creada');
+            } else {
+                mostrarAvisoAuth(false, datos.mensaje);
             }
-
-            inputContrasenna.value = '';
-            inputContrasenna.focus();
-            mostrarAvisoAuth(false, datos.mensaje);
-
         } catch (error) {
             mostrarAvisoAuth(false, 'No se pudo conectar con el servidor. Verifica tu conexión e intenta de nuevo.');
         } finally {

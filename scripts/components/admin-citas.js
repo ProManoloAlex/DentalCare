@@ -73,6 +73,28 @@ function confirmarAccion(mensaje, { titulo = 'Confirmar acción', textoBoton = '
   });
 }
 
+/**
+ * Reemplaza alert() nativo. tipo: 'advertencia' | 'error' | 'exito'
+ */
+function mostrarAviso(mensaje, { titulo = 'Aviso', tipo = 'advertencia' } = {}) {
+  const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalAviso'));
+  document.getElementById('avisoTitulo').textContent = titulo;
+  document.getElementById('avisoMensaje').textContent = mensaje;
+
+  const estilos = {
+    advertencia: { icono: 'bi-exclamation-triangle-fill', color: '#d97706', fondo: '#fef3c7' },
+    error:       { icono: 'bi-x-circle-fill',              color: '#dc2626', fondo: '#fee2e2' },
+    exito:       { icono: 'bi-check-circle-fill',           color: '#0d9488', fondo: '#ccfbf1' },
+  }[tipo];
+
+  const icono = document.getElementById('avisoIcono');
+  icono.innerHTML = `<i class="bi ${estilos.icono}"></i>`;
+  icono.style.color = estilos.color;
+  icono.style.background = estilos.fondo;
+
+  modal.show();
+}
+
 function formatearFechaCorta(fechaStr) {
   const [y, m, d] = fechaStr.split('-');
   const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
@@ -418,12 +440,12 @@ function activarFormularioCita() {
           bootstrap.Modal.getInstance(document.getElementById('modalCita')).hide();
           cargarCitas();
         } else {
-          alert(resp.mensaje || 'No se pudo guardar la cita.');
+          mostrarAviso(resp.mensaje || 'No se pudo guardar la cita.', { titulo: 'No se pudo completar', tipo: 'advertencia' });
         }
       })
       .catch(err => {
         console.error('Error al guardar cita:', err);
-        alert('Ocurrió un error al guardar la cita.');
+        mostrarAviso('Ocurrió un error al guardar la cita.', { titulo: 'Error', tipo: 'error' });
       });
   });
 }

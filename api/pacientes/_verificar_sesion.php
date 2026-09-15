@@ -8,16 +8,10 @@
  */
 
 require_once __DIR__ . '/../../config/Conexion_DB.php';
+require_once __DIR__ . '/../../config/SesionHelper.php';
 
 function obtenerPacienteIdDeSesion(): int {
-    session_start();
-
-    if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_rol'] !== 'paciente') {
-        http_response_code(401);
-        header('Content-Type: application/json');
-        echo json_encode(['ok' => false, 'mensaje' => 'No hay sesión de paciente activa.']);
-        exit();
-    }
+    _verificarRolEnSesion('paciente');
 
     $conexion = Conexion::obtenConexion();
     $stmt = $conexion->prepare("SELECT id FROM pacientes WHERE usuario_id = ?");

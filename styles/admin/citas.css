@@ -218,3 +218,14 @@ tr.cancelada {
     min-width: 88px;
   }
 }
+
+.aviso-icono{
+  width:56px;
+  height:56px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.5rem;
+  margin:0 auto;
+}

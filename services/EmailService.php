@@ -7,14 +7,17 @@ require_once __DIR__ . '/../repositories/ConfiguracionCanalesRepository.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-class EmailService {
+class EmailService
+{
     private ConfiguracionCanalesRepository $canalesRepo;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->canalesRepo = new ConfiguracionCanalesRepository();
     }
 
-    public function enviar(string $destinatarioCorreo, string $destinatarioNombre, string $asunto, string $cuerpoHtml): bool {
+    public function enviar(string $destinatarioCorreo, string $destinatarioNombre, string $asunto, string $cuerpoHtml): bool
+    {
         $mail = new PHPMailer(true);
 
         try {
@@ -46,7 +49,8 @@ class EmailService {
         }
     }
 
-    public function enviarRecuperacionPassword(string $correo, string $nombre, string $token): bool {
+    public function enviarRecuperacionPassword(string $correo, string $nombre, string $token): bool
+    {
         $link   = rtrim(EmailConfig::$APP_URL, '/') . '/auth/restablecer-password.html?token=' . urlencode($token);
         $asunto = 'Recupera tu contraseña — DentalCare';
         $nombreSeguro = htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8');
@@ -68,7 +72,8 @@ class EmailService {
         return $this->enviar($correo, $nombre, $asunto, $cuerpo);
     }
 
-    private function obtenerRemitente(): array {
+    private function obtenerRemitente(): array
+    {
         $canales = $this->canalesRepo->obtener();
         $correo = $canales['email_remitente'] ?? '';
         $nombre = $canales['email_nombre_remitente'] ?? '';
@@ -77,5 +82,24 @@ class EmailService {
             $correo !== '' ? $correo : EmailConfig::$FROM_EMAIL,
             $nombre !== '' ? $nombre : EmailConfig::$FROM_NAME,
         ];
+    }
+    public function enviarCodigoVerificacion(string $correo, string $nombre, string $codigo): bool
+    {
+        $asunto = 'Verifica tu correo — DentalCare';
+        $nombreSeguro = htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8');
+
+        $cuerpo = "
+        <div style='font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;'>
+            <h2 style='color:#0d9488;'>DentalCare</h2>
+            <p>Hola {$nombreSeguro},</p>
+            <p>Usa este código para verificar tu correo electrónico:</p>
+            <p style='text-align:center; margin: 24px 0;'>
+                <span style='font-size:28px; font-weight:bold; letter-spacing:6px; color:#0d9488;'>{$codigo}</span>
+            </p>
+            <p>Este código es válido por 15 minutos. Si tú no creaste esta cuenta, puedes ignorar este correo.</p>
+            <p style='color:#888; font-size: 12px;'>DentalCare — Este es un correo automático, no respondas a este mensaje.</p>
+        </div>";
+
+        return $this->enviar($correo, $nombre, $asunto, $cuerpo);
     }
 }

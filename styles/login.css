@@ -52,6 +52,31 @@ a {
     text-decoration: none;
 }
 
+.btn-outline-teal {
+    border: 1px solid #ced4da;
+    border-left: none;
+    color: #64748b;
+    background: #fff;
+}
+
+.btn-outline-teal:hover,
+.btn-outline-teal:focus {
+    color: #0d9488;
+    background: #f0fdfa;
+    border-color: #ced4da;
+}
+
+.codigo-espaciado {
+    letter-spacing: 8px;
+}
+
+/* Cuando el input de contraseña tiene foco, el borde del botón
+   de al lado se pinta del mismo verde-azulado para que el
+   input-group completo se vea como una sola pieza iluminada */
+.input-group:focus-within .btn-outline-teal {
+    border-color: #14b8a6;
+}
+
 /* Pantallas muy angostas (celulares chicos): menos aire alrededor
    de la tarjeta para que no se sienta apretada contra los bordes */
 @media (max-width: 380px) {

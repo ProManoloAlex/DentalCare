@@ -44,8 +44,12 @@ function cargarDashboard(periodo) {
   document.getElementById('lblKpiIngresos').textContent = etiquetas.ingresos;
   document.getElementById('tituloCitasCard').textContent = etiquetas.citasCard;
 
-  fetch(`/api/admin/dashboard/resumen.php?periodo=${periodo}`)
+fetch(`/api/admin/dashboard/resumen.php?periodo=${periodo}`)
     .then(res => {
+      if (res.status === 401) {
+        window.location.href = '../auth/Login.php';
+        return Promise.reject(new Error('SESION_EXPIRADA'));
+      }
       if (!res.ok) throw new Error(`Status ${res.status}`);
       return res.json();
     })
@@ -57,6 +61,7 @@ function cargarDashboard(periodo) {
       renderTratamientosTop(data.tratamientosTop);
     })
     .catch(err => {
+      if (err.message === 'SESION_EXPIRADA') return; // ya estamos navegando a Login.php
       console.error('Error al cargar el tablero:', err);
       const contenedor = document.getElementById('citasHoyContainer');
       if (contenedor) {

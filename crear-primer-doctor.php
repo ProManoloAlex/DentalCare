@@ -39,8 +39,9 @@ try {
     $hash = password_hash($PASSWORD, PASSWORD_BCRYPT);
 
     $stmtUsuario = $conexion->prepare(
-        "INSERT INTO usuarios (nombre, correo, contrasenna, rol) VALUES (?, ?, ?, 'doctor')"
+        "INSERT INTO usuarios (nombre, correo, contrasenna, rol, correo_verificado) VALUES (?, ?, ?, 'doctor', 1)"
     );
+
     $stmtUsuario->execute([$NOMBRE, $CORREO, $hash]);
     $usuarioId = (int) $conexion->lastInsertId();
 

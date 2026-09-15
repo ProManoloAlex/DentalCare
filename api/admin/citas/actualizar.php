@@ -27,7 +27,6 @@ $resultado = $service->actualizar($citaId, [
 ]);
 
 if (!$resultado['ok']) {
-    http_response_code(400);
 }
 
 echo json_encode($resultado);

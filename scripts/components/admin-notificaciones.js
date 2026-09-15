@@ -34,10 +34,18 @@ class DentalNotificaciones extends HTMLElement {
     this._activarEventos();
     this._actualizarContador();
     this._intervalo = setInterval(() => this._actualizarContador(), DentalNotificaciones.INTERVALO_REFRESCO_MS);
+    
+    // NUEVO: reacomoda el dropdown si la ventana cambia de tamaño mientras está abierto
+    this._onResize = () => {
+      if (!this._dropdown.classList.contains('d-none')) this._posicionarDropdown();
+    };
+    window.addEventListener('resize', this._onResize);
+  
   }
 
   disconnectedCallback() {
     clearInterval(this._intervalo);
+    window.removeEventListener('resize', this._onResize); // NUEVO: evita fugas de memoria
   }
 
   // ---------- estilos (se inyectan una sola vez en <head>, sin importar cuántas páginas los usen) ----------
@@ -101,6 +109,7 @@ class DentalNotificaciones extends HTMLElement {
   }
 
   _abrir() {
+    this._posicionarDropdown()
     this._dropdown.classList.remove('d-none');
     this._cargarLista();
   }
@@ -109,8 +118,30 @@ class DentalNotificaciones extends HTMLElement {
     this._dropdown.classList.add('d-none');
   }
 
-  // ---------- datos ----------
+// NUEVO: en celular usa position:fixed anclado al viewport (independiente
+// de dónde esté la campana), así nunca se sale de pantalla ni se corta.
+// En escritorio deja que el CSS normal (position:absolute, 340px) haga su trabajo.
+_posicionarDropdown() {
+    const esMovil = window.innerWidth <= 576;
+    if (esMovil) {
+        const rectBtn = this._btn.getBoundingClientRect();
+        this._dropdown.style.position = 'fixed';
+        this._dropdown.style.top = `${rectBtn.bottom + 8}px`;
+        this._dropdown.style.left = '12px';
+        this._dropdown.style.right = '12px';
+        this._dropdown.style.width = 'auto';
+        this._dropdown.style.maxHeight = '70vh';
+    } else {
+        this._dropdown.style.position = '';
+        this._dropdown.style.top = '';
+        this._dropdown.style.left = '';
+        this._dropdown.style.right = '';
+        this._dropdown.style.width = '';
+        this._dropdown.style.maxHeight = '';
+    }
+}
 
+  // ---------- datos ----------
   _pintarBadge(noLeidas) {
     if (noLeidas > 0) {
       this._badge.textContent = noLeidas > 9 ? '9+' : noLeidas;

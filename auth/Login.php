@@ -50,7 +50,7 @@
                 </div>
 
                 <!-- Botones de navegación entre paneles -->
-                <div class="bg-light rounded-3 p-1 d-flex mb-4">
+                <div class="bg-light rounded-3 p-1 d-flex mb-4" id="auth-tabs-wrapper">
                     <button id="btn-tab-login" type="button" class="btn flex-fill btn-toggle-active text-teal-custom fw-semibold" onclick="mostrarPanel('login')">
                         Iniciar Sesión
                     </button>
@@ -72,11 +72,16 @@
                         </div>
                         <div class="mb-3">
                             <label for="login-contrasenna" class="form-label fw-semibold">Contraseña</label>
-                            <input type="password" id="login-contrasenna" name="contrasenna" class="form-control py-2 rounded-3 focus-teal" placeholder="••••••••" required>
+                            <div class="input-group">
+                                <input type="password" id="login-contrasenna" name="contrasenna" class="form-control py-2 focus-teal" placeholder="••••••••" required>
+                                <button type="button" class="btn btn-outline-teal toggle-password" data-target="login-contrasenna" tabindex="-1">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="recordarme">
+                                <input class="form-check-input" type="checkbox" id="recordarme" name="recordarme">
                                 <label class="form-check-label" for="recordarme">Recordarme</label>
                             </div>
                             <a href="recuperar-password.html" class="text-teal-custom">¿Olvidó su contraseña?</a>
@@ -89,7 +94,7 @@
 
             <!-- Panel: Registrarse -->
             <div id="panel-registro" class="auth-panel">
-                <form action="RegistroUsuarios.php" method="POST">
+                <form id="form-registro" action="RegistroUsuarios.php" method="POST">
                     <div class="mb-3">
                         <label for="reg-nombre" class="form-label fw-semibold">Nombre Completo</label>
                         <input type="text" id="reg-nombre" name="nombre" class="form-control py-2 rounded-3 focus-teal" placeholder="Ingrese su nombre">
@@ -97,15 +102,43 @@
                     <div class="mb-3">
                         <label for="reg-correo" class="form-label fw-semibold">Correo Electrónico</label>
                         <input type="email" id="reg-correo" name="correo" class="form-control py-2 rounded-3 focus-teal" placeholder="correo@ejemplo.com">
-                    </div>
+                    </div>   
                     <div class="mb-3">
                         <label for="reg-contrasenna" class="form-label fw-semibold">Contraseña</label>
-                        <input type="password" id="reg-contrasenna" name="contrasenna" class="form-control py-2 rounded-3 focus-teal" placeholder="••••••••">
-                    </div>  
+                        <div class="input-group">
+                            <input type="password" id="reg-contrasenna" name="contrasenna" class="form-control py-2 focus-teal" placeholder="••••••••">
+                            <button type="button" class="btn btn-outline-teal toggle-password" data-target="reg-contrasenna" tabindex="-1">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
                     <button type="submit" class="btn bg-teal-custom text-white w-100 py-2 shadow-sm">
                         Crear Cuenta
                     </button>
                 </form>  
+            </div>
+
+            <!-- Panel: Verificar Código de Correo -->
+            <div id="panel-verificacion" class="auth-panel">
+                <div class="text-center mb-3">
+                    <i class="fa-solid fa-envelope-circle-check text-teal-custom fs-1 mb-2"></i>
+                    <p class="text-muted mb-0">Enviamos un código de 6 dígitos a</p>
+                    <p class="fw-semibold mb-0" id="verificacion-correo-mostrado">—</p>
+                </div>
+                <form id="form-verificacion">
+                    <input type="hidden" id="verificacion-correo" name="correo">
+                    <div class="mb-3">
+                        <label for="verificacion-codigo" class="form-label fw-semibold">Código de verificación</label>
+                        <input type="text" id="verificacion-codigo" name="codigo" class="form-control py-2 rounded-3 focus-teal text-center fs-4 codigo-espaciado" placeholder="000000" maxlength="6" inputmode="numeric" autocomplete="one-time-code" required>
+                    </div>
+                    <button type="submit" class="btn bg-teal-custom text-white w-100 py-2 shadow-sm mb-3">
+                        Verificar Correo
+                    </button>
+                    <div class="text-center">
+                        <span class="text-muted small">¿No te llegó?</span>
+                        <a href="#" id="link-reenviar-codigo" class="text-teal-custom small">Reenviar código</a>
+                    </div>
+                </form>
             </div>
 
             </div>
@@ -128,8 +161,12 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
+    <script src="../scripts/components/auth-shared.js"></script>
     <script src="../scripts/components/auth-tabs.js"></script>
     <script src="../scripts/components/auth-login.js"></script>
+    <script src="../scripts/components/auth-registro.js"></script>
+    <script src="../scripts/components/auth-verificacion.js"></script>
+    <script src="../scripts/components/auth-password-toggle.js"></script>
 </body>
 
 </html>
